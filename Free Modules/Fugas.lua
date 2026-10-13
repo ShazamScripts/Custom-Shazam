@@ -1,1606 +1,1430 @@
--- ============================================================================
--- SISTEMA AVANÇADO DE AUTO FUGA E CONTROLE DE VIDAS/DASH (Otimizado sem Lag)
--- Interface padronizada: Macro + Config na mesma linha, com borda vermelha.
--- ============================================================================
+-- Fugas da TyrLivre adaptada para Custom Shazam (sem TyrBot/Chronic).
+local FUGAS_RESTRICTED_MODE = false
+local FUGAS_FULL_FEATURES = true -- Mantem todas as funcionalidades habilitadas; nao depende de Chronic.
+local shazamFugaStackingCreature, shazamFugaComboDelay
+local oldPercent = 0;
 
-storage.fugaSpells = storage.fugaSpells or {}
-storage.fugaSettings = storage.fugaSettings or { isOn = true, showInfo = true }
-if storage.fugaSettings.showInfo == nil then storage.fugaSettings.showInfo = true end
-if type(storage.fugaSettings.infoPos) ~= "table" then
-    storage.fugaSettings.infoPos = {x = 10, y = 45}
+local AnchorTop = 1;
+local AnchorBottom = 2;
+local AnchorLeft = 3;
+local AnchorRight = 4;
+
+local stackDirections = {
+	["W"] = {keys = {"y"}, signals = {">"}};
+	["A"] = {keys = {"x"}, signals = {">"}};
+	["S"] = {keys = {"y"}, signals = {"<"}};
+	["D"] = {keys = {"x"}, signals = {"<"}};
+	["C"] = {keys = {"x", "y"}, signals = {"<", "<"}};
+	["Z"] = {keys = {"x", "y"}, signals = {">", "<"}};
+	["E"] = {keys = {"x", "y"}, signals = {">", ">"}};
+	["Q"] = {keys = {"x", "y"}, signals = {"<", ">"}};
+};
+
+local spellsTypes = {
+	ESCAPE = "Fugas";
+	TRAP = "Traps";
+	STACK = "Stack";
+	STRAIGHT = "Retas";
+	BUFF = "Buffs";
+	DEFAULT = "Outros";
+};
+
+
+local spellsLimits = {};
+local spellsWidgets = {};
+local spellsRespectOrder = {spellsTypes["ESCAPE"]};
+local spellsDefaultShowTime = {spellsTypes["ESCAPE"], spellsTypes["TRAP"], spellsTypes["DEFAULT"]};
+local spellsOptions = {spellsTypes["ESCAPE"]};
+
+
+local widgetStartPosition = {x=50,y=50};
+local worldName = g_game["getWorldName"]():trim();
+local characterName = g_game["getCharacterName"]();
+local isMobileApp = (g_app or modules["_G"]["g_app"])["isMobile"]();
+local isKeyPressed = modules["corelib"]["g_keyboard"]["isKeyPressed"];
+local gameRootPanel = g_ui["getRootWidget"]():recursiveGetChildById("gameRootPanel");
+
+
+local arrowKeys = {"Up", "Left", "Down", "Right"};
+local wasdKeys = {"W", "A", "S", "D", "E", "Z", "Q", "C"};
+local numpadKeys = {"Numpad8", "Numpad4", "Numpad2", "Numpad6", "Numpad9", "Numpad1", "Numpad7", "Numpad3"};
+
+local displayOptions = {
+	{
+		title = "Nome time spell",
+		var_name = "showMsg",
+		default_value = "spellName"
+	},
+	{
+		title = "Mensagem em laranja",
+		var_name = "orangeMsg",
+		default_value = "spellName"
+	},
+	{
+		title = "Cooldown da magia",
+		var_name = "cooldownTotal",
+		range = {min=0,max=600}
+	},
+	{
+		[spellsTypes["STRAIGHT"]] = {
+			title = "Tecla para utilizar",
+			var_name = "key"
+		},
+		[spellsTypes["ESCAPE"]] = {
+			title = "Tempo imune",
+			range = {min=0,max=60}
+		},
+		[spellsTypes["TRAP"]] = {
+			title = "Tempo trapado",
+			range = {min=0,max=60}
+		},
+		[spellsTypes["STACK"]] = {
+			title = "Dist\226ncia m\225xima",
+			var_name = "distance",
+			range = {min=1,max=10}
+		},
+		title = "Tempo ativo",
+		var_name = "activeTotal",
+		range = {min=0,max=180},
+	},
+	{
+		[spellsTypes["DEFAULT"]] = {
+			title = "Porcentagem do target",
+			range = {min=0,max=100}
+		},
+		title = "Porcentagem",
+		var_name = "percent",
+		range = {min=0,max=100},
+		skip = {spellsTypes["TRAP"], spellsTypes["STACK"], spellsTypes["STRAIGHT"], spellsTypes["BUFF"]}
+	},
+	{
+		[spellsTypes["STACK"]] = {
+			title = "Teclas direcionais",
+			var_name = "selectedKeys",
+			values = {
+				table["concat"](wasdKeys, ", "),
+				table["concat"](arrowKeys, ", "),
+				table["concat"](numpadKeys, ", ");
+			},
+		},
+		[spellsTypes["STRAIGHT"]] = {
+			title = "Porcentagem do target",
+			var_name = "percent",
+			range = {min=0,max=100}
+		},
+		title = "Tecla para utilizar",
+		var_name = "key"
+	}
+};
+
+local warn;
+local config;
+local stackData;
+local getCastPercent;
+local doRefreshSpells;
+local doRegisterSpell;
+
+local spellWidget = "UIWidget\n  background-color: black\n  padding: 0 5\n  text-auto-resize: true\n";
+
+local botWidget = setupUI("Panel\n  height: 17\n\n  BotSwitch\n    id: switch\n    anchors.top: parent.top\n    anchors.left: parent.left\n    text-align: center\n    width: 130\n    !text: tr(\"Especiais\")\n\n  Button\n    id: config\n    anchors.top: prev.top\n    anchors.bottom: prev.bottom\n    anchors.left: prev.right\n    anchors.right: parent.right\n    text: Config\n");
+
+local infoCheckBox = setupUI("CheckBox\n  id: checkBox\n  font: cipsoftFont\n  text: Informa\231\245es de batalha\n  margin-top: 3\n");
+
+local entryWidget = "Label\n  background-color: alpha\n  text-offset: 37 4\n  focusable: true\n  height: 16\n  font: verdana-11px-rounded\n\n  CheckBox\n    id: enabled\n    !tooltip: tr(\"Ativar\")\n    anchors.left: parent.left\n    anchors.verticalCenter: parent.verticalCenter\n    width: 15\n    height: 15\n    margin-top: 2\n    margin-left: 3\n\n  CheckBox\n    id: spellTime\n    !tooltip: tr(\"Ativar Time Spell\")\n    anchors.left: prev.right\n    anchors.verticalCenter: prev.verticalCenter\n    width: 15\n    height: 15\n    margin-left: 3\n\n  $focus:\n    background-color: #00000055\n\n  Button\n    id: remove\n    !text: tr('x')\n    anchors.right: parent.right\n    margin-right: 15\n    text-offset: 1 0\n    width: 15\n    height: 15\n    tooltip: Remover magia da lista\n";
+
+local screenWidget = setupUI("MainWindow\n  size: 320 360\n  !text: tr(\"Especiais by JinWoo Scripts\")\n  color: white\n\n  Panel\n    id: logoPanel\n    anchors.bottom: parent.top\n    anchors.right: parent.right\n    size: 50 50\n\n  Panel\n    id: mainPanel\n    image-source: /images/ui/panel_flat\n    anchors.top: parent.top\n    anchors.bottom: parent.bottom\n    anchors.left: parent.left\n    anchors.right: parent.right\n    image-border: 6\n\n    TextList\n      id: spellsList\n      image-source: /images/ui/textedit\n      anchors.centerIn: parent\n      anchors.left: parent.left\n      anchors.right: parent.right\n      margin-top: 20\n      margin-left: 10\n      margin-right: 10\n      image-border: 6\n      height: 180\n      vertical-scrollbar: spellsListScroll\n\n    VerticalScrollBar\n      id: spellsListScroll\n      anchors.top: spellsList.top\n      anchors.bottom: spellsList.bottom\n      anchors.right: spellsList.right\n      step: 10\n      pixels-scroll: true\n\n    TextEdit\n      id: nameField\n      tooltip: Nome da Magia\n      anchors.bottom: spellsList.top\n      anchors.left: parent.left\n      margin-bottom: 5\n      margin-left: 10\n      width: 185\n\n    Label\n      !text: tr(\"Nome da Magia\")\n      anchors.bottom: prev.top\n      anchors.left: prev.left\n      margin-left: 50\n      margin-bottom: 2\n\n    ComboBox\n      id: configList\n      anchors.top: parent.top\n      anchors.left: spellsList.left\n      text-offset: 3 0\n      margin-top: 5\n      margin-right: 5\n      width: 122\n\n    ComboBox\n      id: typeList\n      anchors.top: prev.top\n      anchors.left: prev.right\n      anchors.right: spellsList.right\n      text-offset: 3 0\n      margin-left: 5\n\n    Button\n      id: addButton\n      !text: tr(\"Adicionar\")\n      anchors.top: nameField.top\n      anchors.bottom: nameField.bottom\n      anchors.left: nameField.right\n      anchors.right: spellsList.right\n      margin-left: 5\n\n    Label\n      anchors.top: spellsList.bottom\n      anchors.right: parent.right\n      anchors.left: parent.left\n      id: message\n      margin-top: 2\n      text-auto-resize: true\n      text-align: center\n      text-wrap: true\n\n    Button\n      id: closeButton\n      !text: tr(\"Fechar\")\n      anchors.bottom: parent.bottom\n      anchors.right: typeList.right\n      anchors.left: configList.left\n      margin-bottom: 1\n", g_ui["getRootWidget"]());
+
+local registerWidget = setupUI("MainWindow\n  size: 320 360\n  !text: tr(\"Especiais by JinWoo Scripts\")\n  color: white\n\n  Panel\n    id: mainPanel\n    image-source: /images/ui/panel_flat\n    anchors.top: parent.top\n    anchors.bottom: parent.bottom\n    anchors.left: parent.left\n    anchors.right: parent.right\n    image-border: 6\n\n  Button\n    id: addButton\n    !text: tr(\"Adicionar\")\n    anchors.left: mainPanel.left\n    anchors.bottom: mainPanel.bottom\n    margin-bottom: 5\n    margin-left: 1\n    width: 133\n\n  Button\n    id: backButton\n    !text: tr(\"Voltar\")\n    anchors.bottom: mainPanel.bottom\n    anchors.left: addButton.right\n    anchors.right: mainPanel.right\n    margin-bottom: 5\n    margin-right: 2\n    @onClick: self:getParent():hide();\n", g_ui["getRootWidget"]());
+
+local getAllKeys = function()
+	local keys = {};
+	if (isMobileApp) then
+		keys = {"None", "F1", "F2", "Escape"};
+	else
+		for name, key in pairs(modules["corelib"]["KeyCodeDescs"]) do
+			if (key ~= "Unknown") then
+				table["insert"](keys, key);
+			end
+		end
+	end
+	
+	table["sort"](keys);
+	table["insert"](keys, 1, "None");
+	table["insert"](keys, 1, "AUTO");
+	return keys;
 end
 
-local fugaSpellsWidgets = {}
-local storageAttackers = {}
-local timeClean = 3
-local lastCastAttempt = 0
-
-local izanagiReviveState = {
-    pending = false,
-    died = false,
-    origin = nil,
-    lastPos = nil,
-}
-
-local function persistFuga()
-    if type(ShazamPersistNow) == "function" then
-        ShazamPersistNow()
-    elseif type(saveConfig) == "function" then
-        saveConfig()
-    end
+local isDragKeyPressed = function()
+	if (isMobileApp) then
+		return isKeyPressed("F2");
+	end
+	return modules["corelib"]["g_keyboard"]["isCtrlPressed"]();
 end
 
-local function firstLetterUpper(str)
-    if not str then return "" end
-    return (str:gsub("(%a)([%w_']*)", function(first, rest)
-        return first:upper() .. rest:lower()
-    end))
+local hasAnyActive = function(type)
+	local spells = config["spells"][type];
+	for _, entry in ipairs(spells) do
+		if (entry["activeTime"] and entry["activeTime"] >= os["time"]()) then
+			return true;
+		end
+	end
 end
 
-local function getCastPercent(value)
-    local percent = tonumber(value)
-    if not percent then
-        return 100
-    end
-    return math.max(0, math.min(100, percent))
+local getAllScreenWidgets = function()
+	local widgets = {};
+	for type, data in pairs(spellsWidgets) do
+		if (type == "battlingStatus") then
+			table["insert"](widgets, data);
+			goto continue;
+		end
+		
+		for _, widget in pairs(data) do
+			table["insert"](widgets, widget);
+		end
+		::continue::
+	end
+	return widgets;
 end
 
-local function formatRemainingTime(timeEnd)
-    local currentSec = os.time()
-    if not timeEnd or timeEnd <= currentSec then return "Pronto!" end
-    local remaining = timeEnd - currentSec
-    if remaining > 3600 then return "Pronto!" end
-    return string.format("%.0f", remaining) .. "s"
+local destroyAllWidgets = function()
+	screenWidget["mainPanel"]["spellsList"]:destroyChildren();
+	
+	local widgets = getAllScreenWidgets();
+	for _, widget in pairs(widgets) do
+		widget:destroy();
+	end
+	table["clear"](spellsWidgets);
 end
 
-local function getAllKeys()
-    local keys = {}
-    for _, key in pairs(modules.corelib.KeyCodeDescs or {}) do
-        if key ~= "Unknown" then table.insert(keys, key) end
-    end
-    table.sort(keys)
-    table.insert(keys, 1, "AUTO")
-    return keys
+local doRemoveMouseMove = function(entry)
+	local widget;
+	if (entry == "battlingStatus") then
+		widget = spellsWidgets[entry];
+	else
+		widget = spellsWidgets[entry["type"]][entry["spellName"]];
+	end
+	widget["onDragEnter"] = nil;
+	widget["onDragMove"] = nil;
+	widget:setFocusable(false);
+	widget:setPhantom(true);
+	widget:setDraggable(false);
+	widget:setOpacity(7 / 10);
 end
 
-local widgetConfig = [[
-Label
-  background-color: alpha
-  font: verdana-11px-rounded
-  padding: 2 6
-  focusable: false
-  phantom: false
-  draggable: true
-  text-auto-resize: true
-]]
+local doSetMouseMove = function(entry)
+	local widget;
+	if (entry == "battlingStatus") then
+		widget = spellsWidgets[entry];
+	else
+		widget = spellsWidgets[entry["type"]][entry["spellName"]];
+	end
+	widget:setFocusable(true);
+	widget:setPhantom(false);
+	widget:setDraggable(true);
+	widget:setOpacity(1);
 
-local function attachSpellWidgetCallbacks(widget, entry)
-    widget.onDragEnter = function(self, mousePos)
-        if not modules.corelib.g_keyboard.isCtrlPressed() then return false end
-        self:breakAnchors()
-        self.movingReference = {x = mousePos.x - self:getX(), y = mousePos.y - self:getY()}
-        self.isDragging = true
-        return true
-    end
-    widget.onDragMove = function(self, mousePos, moved)
-        local parentRect = self:getParent():getRect()
-        local newX = math.min(math.max(parentRect.x, mousePos.x - self.movingReference.x), parentRect.x + parentRect.width - self:getWidth())
-        local newY = math.min(math.max(parentRect.y - self:getParent():getMarginTop(), mousePos.y - self.movingReference.y), parentRect.y + parentRect.height - self:getHeight())
-        self:move(newX, newY)
-        entry.widgetPos = {x = newX, y = newY}
-        self.isDragging = true
-        return true
-    end
-    widget.onMouseRelease = function(self, mousePos, mouseButton)
-        if self.isDragging then
-            self.isDragging = false
-            persistFuga()
-            return true
-        end
-    end
+	widget["onDragEnter"] = function(widget, mousePos)
+		widget:breakAnchors();
+		widget["movingReference"] = {x = mousePos["x"] - widget:getX(), y = mousePos["y"] - widget:getY()};
+		return true;
+	end
+
+	widget["onDragMove"] = function(widget, mousePos, moved)
+		local parentRect = widget:getParent():getRect();
+		local x = math["min"](math["max"](parentRect["x"], mousePos["x"] - widget["movingReference"]["x"]), parentRect["x"] + parentRect["width"] - widget:getWidth());
+		local y = math["min"](math["max"](parentRect["y"] - widget:getParent():getMarginTop(), mousePos["y"] - widget["movingReference"]["y"]), parentRect["y"] + parentRect["height"] - widget:getHeight());
+		widget:move(x, y);
+		local pos = {x = x, y = y};
+		if (entry ~= "battlingStatus") then
+			entry["pos"] = pos;
+		else
+			config["battlePos"] = pos;
+		end
+		return true;
+	end
 end
 
-local entryWidget = [[
-Label
-  height: 18
-  focusable: true
-  background-color: alpha
-
-  $focus:
-    background-color: #ffffff33
-
-  CheckBox
-    id: enabled
-    anchors.left: parent.left
-    anchors.verticalCenter: parent.verticalCenter
-    width: 15
-    height: 15
-
-  CheckBox
-    id: showTimespell
-    anchors.left: enabled.right
-    anchors.verticalCenter: parent.verticalCenter
-    margin-left: 5
-    width: 15
-    height: 15
-
-  Label
-    id: textToSet
-    anchors.left: showTimespell.right
-    anchors.verticalCenter: parent.verticalCenter
-    margin-left: 8
-
-  Button
-    id: remove
-    text: x
-    anchors.right: parent.right
-    anchors.verticalCenter: parent.verticalCenter
-    width: 15
-    height: 15
-]]
-
-local fugaIcon = setupUI("Panel\n  height: 17\n\n  BotSwitch\n    id: title\n    anchors.top: parent.top\n    anchors.left: parent.left\n    text-align: center\n    width: 130\n    !text: tr(\"Fugas\")\n\n  Button\n    id: config\n    anchors.top: prev.top\n    anchors.bottom: prev.bottom\n    anchors.left: prev.right\n    anchors.right: parent.right\n    text: Config\n")
-
--- Monitor visual das Fugas, no mesmo padrao do "Save Positions" do Jump.
--- A preferencia fica salva, mas o texto na tela so aparece quando:
---   1) Fugas estiver ligada; e
---   2) Monitor de Fugas estiver marcado.
-local fugaMonitorCheck = setupUI([[
-CheckBox
-  id: checkBox
-  margin-right: 1
-  margin-left: 1
-  margin-top: 3
-  font: cipsoftFont
-  text: Monitor de Fugas
-
-  $checked:
-    color: white
-]])
-
-
-
--- ============================================================================
--- INFORMAÇÕES DE FUGA
--- Visual inspirado no painel "Informações de Batalha" da JinWoo.
--- Aqui mostramos SOMENTE informações relacionadas às FUGAS.
--- ============================================================================
-local fugaStatusWidget = setupUI([[
-UIWidget
-  background-color: black
-  padding: 0 5
-  text-auto-resize: true
-  text: Fuga: aguardando...
-  text-align: center
-]], g_ui.getRootWidget())
-
-local function getAttackerCount()
-    local count = 0
-    local currentSec = os.time()
-    for _, expire in pairs(storageAttackers) do
-        if expire and expire >= currentSec then
-            count = count + 1
-        end
-    end
-    return math.min(count, 6)
+local setupWidget = function(entry)
+	local widget = setupUI(spellWidget, g_ui["getRootWidget"]());
+	local widgetPos;
+	if (entry == "battlingStatus") then
+		widgetPos = config["battlePos"];
+		spellsWidgets[entry] = widget;
+	else
+		widgetPos = entry["pos"];
+		if (spellsWidgets[entry["type"]] == nil) then
+			spellsWidgets[entry["type"]] = {};
+		end
+		spellsWidgets[entry["type"]][entry["spellName"]] = widget;
+	end
+	widget:setPosition(widgetPos or widgetStartPosition);
+	widget["entry"] = entry;
+ 	
+	doRemoveMouseMove(entry);
 end
 
-local function getConfiguredFugaPercent()
-    local bestPercent = nil
-
-    for _, entry in ipairs(storage.fugaSpells or {}) do
-        if entry and entry.enabled then
-            local percent = tonumber(entry.selfHealth) or 0
-            if percent > 0 then
-                -- Igual ao sistema da JinWoo: percentual efetivo,
-                -- incluindo +5% por atacante (ate 6 atacantes).
-                local effective = percent
-                if percent == 100 then effective = 45 end
-                effective = math.min(effective + (getAttackerCount() * 5), 100)
-                if not bestPercent or effective < bestPercent then
-                    bestPercent = effective
-                end
-            end
-        end
-    end
-
-    return bestPercent
+local setBattleStatus = function()
+	local widget = spellsWidgets["battlingStatus"];
+	if (widget == nil) then return; end
+	
+	local attackingPlayers = table["size"](config["attackers"]);
+	
+	local escape_status;
+	if (hasAnyActive(spellsTypes["ESCAPE"])) then
+		escape_status = "Fuga ativa!";
+	else
+		local spells = config["spells"][spellsTypes["ESCAPE"]];
+		local showPercent;
+		for _, entry in ipairs(spells) do
+			if (not entry["cooldownTime"] and entry["enabled"] and (entry["percent"] or 0) > 0) then
+				showPercent = entry["percent"];
+				break
+			end
+		end
+		if (showPercent ~= nil) then
+			escape_status = tr("Fuga em %d", getCastPercent(showPercent)) .. "%";
+		end
+	end
+		
+	local status = {tr("Oponentes: %d", attackingPlayers), escape_status};
+	widget:setText(table["concat"](status, " | "));
+	widget:setColor(attackingPlayers == 0 and "white" or "red");
 end
 
-local function hasActiveFuga()
-    local now = os.time()
-    for _, entry in ipairs(storage.fugaSpells or {}) do
-        if entry and entry.enabled and (tonumber(entry.activeTime) or 0) >= now then
-            return true
-        end
-    end
-    return false
+local canStack = function(from, to, data)
+	for i = 1, table["size"](data["keys"]) do
+		local key = data["keys"][i];
+		local signal = data["signals"][i];
+		local script = tr(
+		"\t\t\tlocal args = {...};\n\t\t\tlocal from = args[1];\n\t\t\tlocal to = args[2];\n\t\t\tlocal key = args[3];\n\t\t\tif (from[key] %s to[key]) then\n\t\t\t\treturn true;\n\t\t\telseif (from[key] == to[key]) then\n\t\t\t\tlocal sub_key = key == \"x\" and \"y\" or \"x\";\n\t\t\t\tlocal playerPos = player:getPosition();\n\t\t\t\tlocal currentDistance = math.abs(playerPos[sub_key] - from[sub_key]);\n\t\t\t\tlocal distance = math.abs(playerPos[sub_key] - to[sub_key]);\n\t\t\t\treturn distance < currentDistance;\n\t\t\tend\n\t\t", signal);
+		local call_script = load(script);
+		local result = call_script(from, to, key);
+		if (not result) then
+			return false;
+		end
+	end
+	return true;
 end
 
-local function updateFugaStatusWidget()
-    if not fugaStatusWidget then return end
-
-    if not storage.fugaSettings.isOn or storage.fugaSettings.showInfo == false then
-        fugaStatusWidget:hide()
-        return
-    end
-
-    local attackers = getAttackerCount()
-    local status
-    local color = attackers > 0 and "red" or "white"
-
-    if hasActiveFuga() then
-        status = string.format("Oponentes: %d | Fuga ativa!", attackers)
-        color = "#00FFFF"
-    else
-        local percent = getConfiguredFugaPercent()
-        if percent then
-            status = string.format("Oponentes: %d | Fuga em %d%%", attackers, math.floor(percent + 0.5))
-        elseif #(storage.fugaSpells or {}) == 0 then
-            status = string.format("Oponentes: %d | Fuga: nenhuma configurada", attackers)
-        else
-            status = string.format("Oponentes: %d | Fuga: pronta", attackers)
-        end
-    end
-
-    fugaStatusWidget:setText(status)
-    fugaStatusWidget:setColor(color)
-    fugaStatusWidget:show()
+local getStackingCreature = function(key, entry)
+	local data = stackDirections[key];
+	local playerPos = player:getPosition();
+	local spectators = getSpectators();
+	
+	local result = {pos=playerPos};
+	for _, spec in ipairs(spectators) do
+		local specPos = spec:getPosition();
+		if (specPos ~= nil and spec:isMonster()) then
+			local distance = getDistanceBetween(specPos, playerPos);
+			if (distance <= entry["distance"]) then
+				if (canStack(result["pos"], specPos, data)) then
+					if (spec:canShoot()) then
+						result["pos"] = specPos;
+						result["creature"] = spec;
+					end
+				end
+			end
+		end
+	end
+	return result["creature"];
 end
 
--- Permite mover somente segurando CTRL + botao esquerdo do mouse.
--- A posicao e salva em storage para permanecer apos reiniciar o bot.
-fugaStatusWidget:setDraggable(true)
-fugaStatusWidget:setFocusable(true)
-fugaStatusWidget:setPosition(storage.fugaSettings.infoPos or {x = 10, y = 45})
-
-fugaStatusWidget.onDragEnter = function(self, mousePos)
-    if not modules.corelib.g_keyboard.isCtrlPressed() then
-        return false
-    end
-
-    self:breakAnchors()
-    self.movingReference = {
-        x = mousePos.x - self:getX(),
-        y = mousePos.y - self:getY()
-    }
-    self.isDragging = true
-    return true
+local doCancelStack = function()
+	if (not stackData) then return; end
+	if (keepTarget ~= nil) then
+		keepTarget["isStacking"] = false;
+	end
+	
+	for i = 1, 10 do
+		schedule(i * 50, function()
+			local creature = (g_game["getAttackingCreature"] or g_game["getAttackingCreature"])();
+			if (creature == nil or shazamFugaStackingCreature == nil) then
+				shazamFugaStackingCreature = nil;
+				return;
+			end
+			
+			if (creature == shazamFugaStackingCreature) then
+				g_game["cancelAttack"]();
+			end
+			
+		end)
+	end
+	
+	
+	stackData = nil;
 end
 
-fugaStatusWidget.onDragMove = function(self, mousePos, moved)
-    if not self.isDragging or not modules.corelib.g_keyboard.isCtrlPressed() then
-        return false
-    end
-
-    local parent = self:getParent()
-    local parentRect = parent:getRect()
-    local newX = math.min(
-        math.max(parentRect.x, mousePos.x - self.movingReference.x),
-        parentRect.x + parentRect.width - self:getWidth()
-    )
-    local newY = math.min(
-        math.max(parentRect.y - parent:getMarginTop(), mousePos.y - self.movingReference.y),
-        parentRect.y + parentRect.height - self:getHeight()
-    )
-
-    self:move(newX, newY)
-    storage.fugaSettings.infoPos = {x = newX, y = newY}
-    return true
+local doStack = function()
+	local entry = stackData["entry"];
+	local creature = getStackingCreature(stackData["key"], stackData["entry"]);
+	if (not creature) then
+		return doCancelStack();
+	end
+	
+	shazamFugaComboDelay = now + 500;
+	
+	if (keepTarget ~= nil) then
+		keepTarget["isStacking"] = true;
+	end
+	
+	stackData["creature"] = creature;
+	local target = (g_game["getAttackingCreature"] or g_game["getAttackingCreature"])();
+	if (target ~= creature) then
+		local doAttack = g_game["attack"];
+		if (doAttack == nil) then
+			doAttack = g_game["attack"];
+		end
+		
+		shazamFugaStackingCreature = creature;
+		doAttack(creature);
+		
+	end
+	
+	
+		
+			
+			
+		
+	
+	
+	schedule(10, function()
+		say(entry["spellName"], table["size"](spellsOptions) - table["find"](spellsOptions, spellsTypes["STACK"]));
+	end)
 end
 
-fugaStatusWidget.onMouseRelease = function(self, mousePos, mouseButton)
-    if self.isDragging then
-        self.isDragging = false
-        persistFuga()
-        return true
-    end
+local getLowestBetween = function(p1, p2)
+
+	local distx = math["abs"](p1["x"] - p2["x"]);
+	local disty = math["abs"](p1["y"] - p2["y"]);
+	
+	return math["min"](distx, disty);
 end
 
-local fugaInterface = setupUI([[
-MainWindow
-  text: Fugas by JinWoo Scripts
-  size: 510 350
-
-  Panel
-    id: mainPanel
-    image-source: /images/ui/panel_flat
-    anchors.top: parent.top
-    anchors.bottom: parent.bottom
-    anchors.left: parent.left
-    anchors.right: parent.right
-    image-border: 6
-
-  TextList
-    id: spellList
-    anchors.left: parent.left
-    anchors.top: parent.top
-    padding: 1
-    width: 170
-    anchors.bottom: moveUp.top
-    margin-bottom: 5
-    vertical-scrollbar: spellListScrollBar
-
-  VerticalScrollBar
-    id: spellListScrollBar
-    anchors.top: spellList.top
-    anchors.bottom: spellList.bottom
-    anchors.left: spellList.right
-    step: 14
-    pixels-scroll: true
-
-  Button
-    id: moveUp
-    anchors.bottom: parent.bottom
-    anchors.left: parent.left
-    text: Move Up
-    width: 80
-
-  Button
-    id: moveDown
-    anchors.bottom: parent.bottom
-    anchors.left: moveUp.right
-    margin-left: 10
-    text: Move Down
-    width: 80
-
-  VerticalSeparator
-    id: sep2
-    anchors.top: parent.top
-    anchors.bottom: parent.bottom
-    anchors.left: spellListScrollBar.right
-    margin-left: 10
-
-  Label
-    id: castSpellLabel
-    anchors.left: sep2.right
-    anchors.top: parent.top
-    text: Cast Spell:
-    margin-left: 10
-    margin-top: 5
-
-  TextEdit
-    id: castSpell
-    anchors.left: castSpellLabel.right
-    anchors.right: parent.right
-    anchors.verticalCenter: castSpellLabel.verticalCenter
-    margin-left: 5
-
-  Label
-    id: orangeSpellLabel
-    anchors.left: sep2.right
-    anchors.top: castSpell.bottom
-    text: Msg Laranja:
-    margin-left: 10
-    margin-top: 15
-
-  TextEdit
-    id: orangeSpell
-    anchors.left: orangeSpellLabel.right
-    anchors.right: sameSpell.left
-    anchors.verticalCenter: orangeSpellLabel.verticalCenter
-    margin-left: 5
-    margin-right: 5
-
-  CheckBox
-    id: sameSpell
-    anchors.right: parent.right
-    anchors.verticalCenter: orangeSpellLabel.verticalCenter
-    text: = Cast?
-    width: 60
-
-  Label
-    id: onScreenLabel
-    anchors.left: sep2.right
-    anchors.top: orangeSpell.bottom
-    text: Nome Tela:
-    margin-left: 10
-    margin-top: 15
-
-  TextEdit
-    id: onScreen
-    anchors.left: onScreenLabel.right
-    anchors.right: parent.right
-    anchors.verticalCenter: onScreenLabel.verticalCenter
-    margin-left: 5
-
-  Label
-    id: hotkeyLabel
-    anchors.left: sep2.right
-    anchors.top: onScreen.bottom
-    text: Hotkey Manual:
-    margin-left: 10
-    margin-top: 15
-
-  ComboBox
-    id: hotkeyList
-    anchors.left: hotkeyLabel.right
-    anchors.right: parent.right
-    anchors.verticalCenter: hotkeyLabel.verticalCenter
-    margin-left: 5
-
-  Label
-    id: hppercentLabel
-    anchors.left: sep2.right
-    anchors.top: hotkeyLabel.bottom
-    text: HP Percent:
-    margin-left: 10
-    margin-top: 15
-
-  Panel
-    id: hppercent
-    anchors.left: hppercentLabel.right
-    anchors.right: parent.right
-    anchors.verticalCenter: hppercentLabel.verticalCenter
-    margin-left: 5
-    height: 22
-
-  Label
-    id: cooldownTotalLabel
-    anchors.left: sep2.right
-    anchors.top: hppercent.bottom
-    text: CD Total:
-    margin-left: 10
-    margin-top: 15
-
-  Panel
-    id: cooldownTotal
-    anchors.left: cooldownTotalLabel.right
-    anchors.right: parent.right
-    anchors.verticalCenter: cooldownTotalLabel.verticalCenter
-    margin-left: 15
-    height: 22
-
-  Label
-    id: cooldownActiveLabel
-    anchors.left: sep2.right
-    anchors.top: cooldownTotal.bottom
-    text: CD Ativo:
-    margin-left: 10
-    margin-top: 15
-
-  Panel
-    id: cooldownActive
-    anchors.left: cooldownActiveLabel.right
-    anchors.right: parent.right
-    anchors.verticalCenter: cooldownActiveLabel.verticalCenter
-    margin-left: 14
-    height: 22
-
-  Panel
-    id: optionsPanel
-    anchors.left: sep2.right
-    anchors.right: parent.right
-    anchors.top: cooldownActive.bottom
-    margin-top: 15
-    margin-left: 10
-    height: 20
-    layout:
-      type: horizontalBox
-      spacing: 8
-
-    CheckBox
-      id: reviveOption
-      text: Revive
-      tooltip: Reseta o estado ativo caso retorne em coordenadas de ressurreicao.
-
-    CheckBox
-      id: lifesOption
-      text: Vidas
-      tooltip: Habilita cargas de sobrevivencia regressivas (Ex: Kakuzu/Danzou).
-
-    CheckBox
-      id: multipleOption
-      text: Multi
-      tooltip: Habilita cargas de uso consecutivo (Ex: Dash do Raikage 2x).
-
-    SpinBox
-      id: configValue
-      width: 40
-      minimum: 1
-      maximum: 10
-      step: 1
-      editable: true
-
-  CheckBox
-    id: showInfo
-    text: Informações de Batalha
-    anchors.left: sep2.right
-    anchors.bottom: insertSpell.top
-    margin-left: 10
-    margin-bottom: 5
-
-  Button
-    id: insertSpell
-    text: Insert Spell
-    anchors.right: parent.right
-    anchors.bottom: parent.bottom
-    width: 80
-
-  Button
-    id: closeButton
-    text: Close
-    anchors.right: insertSpell.left
-    anchors.bottom: parent.bottom
-    margin-right: 5
-    width: 60
-]], g_ui.getRootWidget())
-
--- ============================================================================
--- INTERFACE PRINCIPAL NO PADRAO DO "ESPECIAIS" (JinWoo)
--- A tela de cadastro detalhado abaixo continua existindo para manter as
--- melhorias exclusivas do Fugas.lua (Vidas, Multi, Revive/Izanagi etc.).
--- ============================================================================
-local fugaMainScreen = setupUI([[
-MainWindow
-  size: 320 360
-  text: Fugas by JinWoo Scripts
-  color: white
-
-  Panel
-    id: mainPanel
-    image-source: /images/ui/panel_flat
-    anchors.top: parent.top
-    anchors.bottom: parent.bottom
-    anchors.left: parent.left
-    anchors.right: parent.right
-    image-border: 6
-
-    TextList
-      id: spellsList
-      image-source: /images/ui/textedit
-      anchors.centerIn: parent
-      anchors.left: parent.left
-      anchors.right: parent.right
-      margin-top: 20
-      margin-left: 10
-      margin-right: 10
-      image-border: 6
-      height: 180
-      vertical-scrollbar: spellsListScroll
-
-    VerticalScrollBar
-      id: spellsListScroll
-      anchors.top: spellsList.top
-      anchors.bottom: spellsList.bottom
-      anchors.right: spellsList.right
-      step: 10
-      pixels-scroll: true
-
-    TextEdit
-      id: nameField
-      tooltip: Nome da Magia
-      anchors.bottom: spellsList.top
-      anchors.left: parent.left
-      margin-bottom: 5
-      margin-left: 10
-      width: 185
-
-    Label
-      text: Nome da Magia
-      anchors.bottom: prev.top
-      anchors.left: prev.left
-      margin-left: 50
-      margin-bottom: 2
-
-    ComboBox
-      id: typeList
-      anchors.top: parent.top
-      anchors.left: spellsList.left
-      anchors.right: spellsList.right
-      text-offset: 3 0
-      margin-top: 5
-
-    Button
-      id: addButton
-      text: Adicionar
-      anchors.top: nameField.top
-      anchors.bottom: nameField.bottom
-      anchors.left: nameField.right
-      anchors.right: spellsList.right
-      margin-left: 5
-
-    Label
-      id: message
-      anchors.top: spellsList.bottom
-      anchors.right: parent.right
-      anchors.left: parent.left
-      margin-top: 2
-      text-auto-resize: true
-      text-align: center
-      text-wrap: true
-
-    CheckBox
-      id: showInfo
-      text: Informacoes de batalha
-      anchors.left: spellsList.left
-      anchors.bottom: closeButton.top
-      margin-bottom: 8
-
-    Button
-      id: closeButton
-      text: Fechar
-      anchors.bottom: parent.bottom
-      anchors.right: spellsList.right
-      anchors.left: spellsList.left
-      margin-bottom: 1
-]], g_ui.getRootWidget())
-
-fugaMainScreen:hide()
-fugaMainScreen.mainPanel.typeList:addOption("Fugas")
-fugaMainScreen.mainPanel.typeList:setCurrentOption("Fugas")
-
-local FUGA_MAIN_ENTRY = [[
-Label
-  background-color: alpha
-  text-offset: 37 4
-  focusable: true
-  height: 16
-  font: verdana-11px-rounded
-
-  CheckBox
-    id: enabled
-    tooltip: Ativar
-    anchors.left: parent.left
-    anchors.verticalCenter: parent.verticalCenter
-    width: 15
-    height: 15
-    margin-top: 2
-    margin-left: 3
-
-  CheckBox
-    id: spellTime
-    tooltip: Ativar Time Spell
-    anchors.left: prev.right
-    anchors.verticalCenter: prev.verticalCenter
-    width: 15
-    height: 15
-    margin-left: 3
-
-  $focus:
-    background-color: #00000055
-
-  Button
-    id: remove
-    text: x
-    anchors.right: parent.right
-    margin-right: 15
-    text-offset: 1 0
-    width: 15
-    height: 15
-    tooltip: Remover magia da lista
-]]
-
-local refreshFugaMainList
-
--- ============================================================
---  STEPPER  ( -  [valor]  +  )  -- substitui a barra com setas < >
---  Mesmo estilo dos botoes do Auto Treino. Mantem a API:
---  getValue() / setValue(v) / onValueChange(widget, valor)
--- ============================================================
-local STEPPER_UI = [[
-Panel
-  height: 22
-
-  Button
-    id: minus
-    anchors.top: parent.top
-    anchors.left: parent.left
-    width: 28
-    height: 22
-    text: <
-
-  TextEdit
-    id: edit
-    anchors.top: parent.top
-    anchors.left: minus.right
-    margin-left: 4
-    width: 60
-    height: 22
-    text-align: center
-
-  Button
-    id: plus
-    anchors.top: parent.top
-    anchors.left: edit.right
-    margin-left: 4
-    width: 28
-    height: 22
-    text: >
-
-  Label
-    id: unit
-    anchors.verticalCenter: parent.verticalCenter
-    anchors.left: plus.right
-    margin-left: 6
-]]
-
-local function createStepper(parent, minV, maxV, startValue, unit)
-    local w = setupUI(STEPPER_UI, parent)
-    w.isStepper = true
-    w.minV = minV
-    w.maxV = maxV
-    w.value = minV
-    w.busy = false
-    w.unit:setText(unit or "")
-
-    w.getValue = function(self) return self.value end
-
-    w.setValue = function(self, v)
-        v = math.floor(tonumber(v) or self.minV)
-        v = math.max(self.minV, math.min(self.maxV, v))
-        self.value = v
-        self.busy = true
-        self.edit:setText(tostring(v))
-        self.busy = false
-        if self.onValueChange then self.onValueChange(self, v) end
-    end
-
-    w.minus.onClick = function() w:setValue(w.value - 1) end
-    w.plus.onClick = function() w:setValue(w.value + 1) end
-
-    -- tambem da para digitar o valor direto
-    w.edit.onTextChange = function(widget, text)
-        if w.busy then return end
-        local n = tonumber(text)
-        if not n then return end
-        if n < w.minV or n > w.maxV then
-            w:setValue(n)
-        else
-            w.value = math.floor(n)
-            if w.onValueChange then w.onValueChange(w, w.value) end
-        end
-    end
-
-    w:setValue(startValue or minV)
-    return w
+local canUseStraight = function()
+	local target = g_game["getAttackingCreature"]();
+	if (target == nil) then
+		return false;
+	end
+	
+	local targetPos = target:getPosition();
+	if (not targetPos) then 
+		return false; 
+	end
+	
+	local playerPos = player:getPosition();
+	local distance = getDistanceBetween(playerPos, targetPos);
+	local lowest = getLowestBetween(playerPos, targetPos);
+	if (distance > 0 and distance <= 4 and lowest <= (g_game["getWorldName"]():lower():find("db") and 1 or 0)) then
+		local dir = player:getDirection();
+		dir = dir <= 3 and dir or dir < 6 and 1 or 3;
+		if (playerPos["x"] > targetPos["x"]) then
+			turn(West);
+			return dir == West;
+		elseif (playerPos["x"] < targetPos["x"]) then
+			turn(East);
+			return dir == East;
+		elseif (playerPos["y"] > targetPos["y"]) then
+			turn(North);
+			return dir == North;
+		elseif (playerPos["y"] < targetPos["y"]) then
+			turn(South);
+			return dir == South;
+		end
+	end
 end
 
--- (estas constantes nao existiam neste arquivo: addAnchor recebia nil, dava erro
--- e os campos HP Percent / CD Total / CD Ativo sumiam)
-local AnchorTop, AnchorBottom, AnchorLeft, AnchorRight = 1, 2, 3, 4
-
-local function fugaStepper(placeholder, minV, maxV, unit)
-    local st = createStepper(placeholder, minV, maxV, 0, unit)
-    st:addAnchor(AnchorLeft, "parent", AnchorLeft)
-    st:addAnchor(AnchorRight, "parent", AnchorRight)
-    st:addAnchor(AnchorTop, "parent", AnchorTop)
-    return st
-end
-local fugaHp = fugaStepper(fugaInterface.hppercent, 0, 100, "%")
-local fugaCdTotal = fugaStepper(fugaInterface.cooldownTotal, 0, 180, "s")
-local fugaCdActive = fugaStepper(fugaInterface.cooldownActive, 0, 180, "s")
-
-
-for _, k in ipairs(getAllKeys()) do fugaInterface.hotkeyList:addOption(k) end
-
-local refreshFugaList
-
-local function reindexTable(t)
-    for i, e in ipairs(t) do e.index = i end
+local getAttackersAddition = function()
+	local attackers = table["size"](config["attackers"]);
+	attackers = attackers < 6 and attackers or 6;
+	return attackers * 5;
 end
 
-refreshFugaList = function()
-    for _, child in pairs(fugaInterface.spellList:getChildren()) do child:destroy() end
-    for _, widget in pairs(fugaSpellsWidgets) do widget:destroy() end
-    fugaSpellsWidgets = {}
-
-    for index, entry in ipairs(storage.fugaSpells) do
-        local label = setupUI(entryWidget, fugaInterface.spellList)
-        local newWidget = setupUI(widgetConfig, g_ui.getRootWidget())
-        newWidget:setText(firstLetterUpper(entry.onScreen) .. ": Pronto!")
-        attachSpellWidgetCallbacks(newWidget, entry)
-        if not entry.widgetPos then entry.widgetPos = {x = 50, y = 50} end
-        if storage.fugaSettings.isOn and entry.enableTimeSpell then newWidget:show() else newWidget:hide() end
-        newWidget:setPosition(entry.widgetPos)
-        fugaSpellsWidgets[entry.spellCast] = newWidget
-
-        label.onDoubleClick = function()
-            fugaInterface.castSpell:setText(entry.spellCast)
-            fugaInterface.orangeSpell:setText(entry.orangeSpell)
-            fugaInterface.onScreen:setText(entry.onScreen)
-            fugaHp:setValue(entry.selfHealth)
-            fugaCdTotal:setValue(entry.rawCooldownTotal or 0)
-            fugaCdActive:setValue(entry.rawCooldownActive or 0)
-            if entry.keyPress then fugaInterface.hotkeyList:setCurrentOption(entry.keyPress) end
-            fugaInterface.optionsPanel.lifesOption:setChecked(entry.enableLifes == true)
-            fugaInterface.optionsPanel.multipleOption:setChecked(entry.enableMultiple == true)
-            fugaInterface.optionsPanel.reviveOption:setChecked(entry.enableRevive == true)
-            if entry.enableLifes then
-                fugaInterface.optionsPanel.configValue:show()
-                fugaInterface.optionsPanel.configValue:setValue(entry.amountLifes or 4)
-            elseif entry.enableMultiple then
-                fugaInterface.optionsPanel.configValue:show()
-                fugaInterface.optionsPanel.configValue:setValue(entry.amountUses or 2)
-            end
-            table.remove(storage.fugaSpells, index)
-            reindexTable(storage.fugaSpells)
-            refreshFugaList()
-            persistFuga()
-        end
-
-        label.enabled:setChecked(entry.enabled)
-        label.enabled.onClick = function()
-            entry.enabled = not entry.enabled
-            label.enabled:setChecked(entry.enabled)
-            persistFuga()
-        end
-
-        label.showTimespell:setChecked(entry.enableTimeSpell)
-        label.showTimespell.onClick = function()
-            entry.enableTimeSpell = not entry.enableTimeSpell
-            label.showTimespell:setChecked(entry.enableTimeSpell)
-            if storage.fugaSettings.isOn and entry.enableTimeSpell then newWidget:show() else newWidget:hide() end
-            persistFuga()
-        end
-
-        label.remove.onClick = function()
-            table.remove(storage.fugaSpells, index)
-            reindexTable(storage.fugaSpells)
-            refreshFugaList()
-            persistFuga()
-        end
-
-        local keyText = (entry.keyPress and entry.keyPress ~= "AUTO") and (" [" .. entry.keyPress .. "]") or ""
-        label.textToSet:setText(firstLetterUpper(entry.spellCast) .. " | " .. entry.selfHealth .. "%" .. keyText)
-    end
+getCastPercent = function(value)
+	if (value == 100) then
+		value = 45;
+	end
+	value = value + getAttackersAddition();
+	return value <= 100 and value or 100;
 end
 
-fugaInterface:hide()
-fugaIcon.title:setOn(storage.fugaSettings.isOn)
+local canCast = function(entry)
+	if (not entry["enabled"]) then
+		return false;
+	end
+	
+	if ((entry["cooldownTime"] or 0) >= os["time"]()) then
+		return false;
+	end
 
-fugaIcon.title.onClick = function(w)
-    storage.fugaSettings.isOn = not storage.fugaSettings.isOn
-    w:setOn(storage.fugaSettings.isOn)
+	if (table["find"](spellsRespectOrder, entry["type"]) and hasAnyActive(entry["type"])) then
+		return false;
+	end
 
-    -- O cooldown/activeTime continua salvo e sendo atualizado pelos callbacks,
-    -- mas nenhum TimeSpell fica visível enquanto a macro Fugas estiver desligada.
-    for _, entry in ipairs(storage.fugaSpells or {}) do
-        local spellWidget = fugaSpellsWidgets[entry.spellCast]
-        if spellWidget then
-            if storage.fugaSettings.isOn and entry.enableTimeSpell then
-                spellWidget:show()
-            else
-                spellWidget:hide()
-            end
-        end
-    end
-
-    -- Atualiza imediatamente o texto flutuante. Assim, ao desligar Fugas,
-    -- ele some na mesma hora mesmo que "Monitor de Fugas" continue marcado.
-    updateFugaStatusWidget()
-    persistFuga()
+	local key = entry["key"];
+	local percent = (tonumber(entry["percent"]) or 0);
+	
+	
+	if (entry["type"] == spellsTypes["ESCAPE"]) then
+		if (percent > 0) then
+			local healthPercent = (player:getHealthPercent() or 100);
+			if (healthPercent < getCastPercent(percent)) then
+				return true;
+			end
+		end
+		return isKeyPressed(key);
+	end
+	
+	if (entry["type"] == spellsTypes["TRAP"]) then
+		if (key == "AUTO") then
+			local target = g_game["getAttackingCreature"]();
+			if (target and target:isPlayer()) then
+				return true;
+			end
+		end
+		
+		return isKeyPressed(key);
+	end
+		
+	if (entry["type"] == spellsTypes["STACK"]) then
+		if (g_mouse["isPressed"](3)) then 
+			for _, key in ipairs(entry["selectedKeys"]:split(", ")) do
+				if (isKeyPressed(key)) then
+					local creature = getStackingCreature(key, entry);
+					if (creature ~= nil) then
+						return key;
+					end
+				end
+			end
+		end
+		return;
+	end
+	
+	if (entry["type"] == spellsTypes["STRAIGHT"]) then
+		local castPercent = percent;
+		if (castPercent ~= nil) then
+			local target = g_game["getAttackingCreature"]();
+			if (target and target:isPlayer()) then
+				local healthPercent = (target:getHealthPercent() or 100);
+				if (healthPercent < castPercent) then
+					return canUseStraight();
+				end
+			end
+		end
+		if (entry["key"] == "AUTO" or isKeyPressed(key)) then
+			return canUseStraight();
+		end
+		return;
+	end
+	
+	if (entry["type"] == spellsTypes["BUFF"]) then
+		if ((storage["sealedTypes"] and storage["sealedTypes"]["buff"] or 0) >= os["time"]()) then
+			return false;
+		end
+		
+		if (entry["key"] == "AUTO") then
+			return true;
+		end
+		
+		return isKeyPressed(entry["key"]);
+	end
+	
+	if (entry["type"] == spellsTypes["DEFAULT"]) then
+		local castPercent = percent;
+		if (castPercent ~= nil) then
+			local target = g_game["getAttackingCreature"]();
+			if (target and target:isPlayer()) then
+				local healthPercent = (target:getHealthPercent() or 100);
+				if (healthPercent < castPercent) then
+					return true;
+				end
+			end
+		end
+		
+		return isKeyPressed(entry["key"]);
+	end
 end
 
-fugaIcon.config.onClick = function()
-    if fugaMainScreen:isVisible() then
-        fugaMainScreen:hide()
-    else
-        if refreshFugaMainList then refreshFugaMainList() end
-        fugaMainScreen:show()
-        fugaMainScreen:raise()
-        fugaMainScreen:focus()
-    end
+local doSpellCast = function(type)
+	local spells = config["spells"][type];
+	if (#spells == 0) then return; end
+	
+	local any_castable;
+	local respectOrder = table["find"](spellsRespectOrder, type);
+	for _, entry in ipairs(spells) do
+		if (
+			respectOrder and 
+			(not entry["key"] or not isKeyPressed(entry["key"])) and 
+			entry["enabled"] and
+			(entry["cooldownTotal"] or 0) > 0
+		) then
+			if (any_castable ~= nil) then
+				goto continue;
+			end
+			if (not entry["cooldownTime"]) then
+				any_castable = true;
+			end
+		end
+
+		local result = canCast(entry);
+		if (result) then
+			if (entry["type"] == spellsTypes["STACK"]) then
+				stackData = {};
+				stackData["key"] = result;
+				stackData["entry"] = entry;
+			else
+				if (
+					(entry["key"] ~= nil and isKeyPressed(entry["key"])) or 
+					entry["type"] == spellsTypes["ESCAPE"]
+				) then
+					shazamFugaComboDelay = now + 500;
+				end
+				say(entry["spellName"], table["size"](spellsOptions) - table["find"](spellsOptions, entry["type"]));
+				if (respectOrder) then
+					return;
+				end
+			end
+		end
+		::continue::
+	end
 end
 
-fugaIcon.onMouseRelease = function(self, mousePos, mouseButton)
-    if mouseButton == 2 then
-        if refreshFugaMainList then refreshFugaMainList() end
-        fugaMainScreen:show()
-        fugaMainScreen:raise()
-        fugaMainScreen:focus()
-    end
+table["findbyfield"] = function(t, fieldname, fieldvalue)
+	for _i,subt in pairs(t) do
+		if subt[fieldname] == fieldvalue then
+			return subt
+		end
+	end
+	return nil
 end
 
-fugaInterface.closeButton.onClick = function() fugaInterface:hide() end
-
--- Checkbox principal do monitor (fora do Config), igual ao Save Positions do Jump.
-fugaMonitorCheck:setChecked(storage.fugaSettings.showInfo ~= false)
-fugaMonitorCheck.onCheckChange = function(_, checked)
-    storage.fugaSettings.showInfo = checked
-    -- Mantem os controles antigos sincronizados, embora fiquem ocultos.
-    if fugaInterface and fugaInterface.showInfo then fugaInterface.showInfo:setChecked(checked) end
-    if fugaMainScreen and fugaMainScreen.mainPanel and fugaMainScreen.mainPanel.showInfo then
-        fugaMainScreen.mainPanel.showInfo:setChecked(checked)
-    end
-    persistFuga()
-    updateFugaStatusWidget()
+local reIndex = function()
+	local selectedSpells = config["spells"][config["selected_type"]];
+	for index, widget in ipairs(screenWidget["mainPanel"]["spellsList"]:getChildren()) do
+		local entry = table["findbyfield"](selectedSpells, "spellName", widget:getId());
+		entry["index"] = index;
+	end
 end
 
-fugaInterface.showInfo:setChecked(storage.fugaSettings.showInfo ~= false)
-fugaInterface.showInfo.onCheckChange = function(_, checked)
-    storage.fugaSettings.showInfo = checked
-    persistFuga()
-    updateFugaStatusWidget()
+doRefreshSpells = function()
+	destroyAllWidgets();
+	for type, data in pairs(config["spells"]) do
+		local removedTotal = 0;
+		local removeEntries = {};
+		local limit = spellsLimits[type];
+		for index, entry in ipairs(data) do
+			if (limit < index) then
+				table["insert"](removeEntries, index);
+				goto continue;
+			end
+		
+			if (config["enabled"] and entry["enabled"] and entry["spellTime"]) then
+				setupWidget(entry);
+			end
+			::continue::
+		end
+		for _, index in ipairs(removeEntries) do
+			table["remove"](data, index - removedTotal);
+			removedTotal = removedTotal + 1;
+		end
+	end
+	
+	local selectedSpells = config["spells"][config["selected_type"]];
+	for index, entry in ipairs(selectedSpells) do
+		local widget = setupUI(entryWidget, screenWidget["mainPanel"]["spellsList"]);
+		local removeSpell = function()
+			screenWidget["mainPanel"]["nameField"]:setText(entry["spellName"]);
+			table["remove"](selectedSpells, index);
+			doRefreshSpells();
+		end
+		
+		widget["onDoubleClick"] = function()
+			doRegisterSpell(table["copy"](entry));
+			removeSpell();
+		end
+		widget["remove"]["onClick"] = removeSpell;
+		widget["enabled"]:setChecked(entry["enabled"]);
+		widget["spellTime"]:setChecked(entry["spellTime"]);
+
+		widget["enabled"]["onCheckChange"] = function(widget, enabled)
+			entry["enabled"] = enabled;
+			doRefreshSpells();
+		end
+		widget["spellTime"]["onCheckChange"] = function(widget, enabled)
+			entry["spellTime"] = enabled;
+			doRefreshSpells();
+		end
+
+		local text = {entry["spellName"]:sub(1, 10):ucwords(), tr("CD: %ds", entry["cooldownTotal"])};
+		if (entry["percent"]) then
+			local percent = (entry["percent"] == 100 and "AUTO" or entry["percent"]) .. "%";
+			table["insert"](text, percent);
+		end
+		if (entry["key"]) then
+			local header = entry["key"] == "AUTO" and "" or "Key: ";
+			local key = header .. entry["key"];
+			table["insert"](text, key);
+		end
+		
+		text = table["concat"](text, " | ");
+		widget:setText(text);
+		widget:setId(entry["spellName"]);
+	end
+	if (config["showInfo"] and config["enabled"] and not FUGAS_RESTRICTED_MODE) then
+		setupWidget("battlingStatus");
+	end
+	reIndex();
 end
 
-fugaInterface.sameSpell:setChecked(true)
-fugaInterface.orangeSpell:setEnabled(false)
-fugaInterface.sameSpell.onCheckChange = function(w, checked)
-    if checked then
-        fugaInterface.orangeSpell:setEnabled(false)
-    else
-        fugaInterface.orangeSpell:setEnabled(true)
-        fugaInterface.orangeSpell:setText(fugaInterface.castSpell:getText())
-    end
+local doConfigCheck = function()
+	local clean_config = {};
+	clean_config["spells"] = {};
+	clean_config["attackers"] = {};
+	clean_config["enabled"] = true;
+	clean_config["showInfo"] = true;
+	clean_config["battlePos"] = widgetStartPosition;
+	clean_config["selected_type"] = spellsOptions[1];
+
+	for _, option in ipairs(spellsOptions) do
+		clean_config["spells"][option] = {};
+	end
+
+	if (type(storage["shazamTyrFugasConfig"]) ~= "table") then
+		storage["shazamTyrFugasConfig"] = clean_config;
+	else
+		if (storage["shazamTyrFugasConfig"]["selected_type"] == nil) then
+			local config_copy = table["recursivecopy"](storage["shazamTyrFugasConfig"]);
+			clean_config["showInfo"] = config_copy["showInfo"];
+			
+			for orangeMsg, entry in pairs(config_copy["spells"]) do
+				entry["castSpellName"] = nil;
+				entry["orangeMsg"] = orangeMsg;
+				
+				if (entry["selectedKeys"]) then
+					entry["selectedKeys"] = table["concat"](entry["selectedKeys"], ", ");
+				end
+				
+				if (entry["type"] == "Especiais") then
+					entry["type"] = spellsTypes["DEFAULT"];
+				end
+				
+				local spells = clean_config["spells"][entry["type"]];
+				
+				table["insert"](spells, entry);
+				table["sort"](spells, function(a, b) return a["index"] < b["index"];	end)
+			end
+			
+			storage["shazamTyrFugasConfig"] = clean_config;
+		end
+	end
+	
+	local data = storage["shazamTyrFugasConfig"]["spells"]["Especiais"];
+	if (data ~= nil) then
+		local new_data = {};
+		for index, entry in ipairs(data) do
+			local copy = table["recursivecopy"](entry);
+			copy["type"] = spellsTypes["DEFAULT"];
+			table["insert"](new_data, copy);
+		end
+		storage["shazamTyrFugasConfig"]["spells"]["Especiais"] = nil;
+		storage["shazamTyrFugasConfig"]["spells"][spellsTypes["DEFAULT"]] = new_data;
+	end
+	
+	config = storage["shazamTyrFugasConfig"];
 end
 
-fugaInterface.optionsPanel.configValue:hide()
-fugaInterface.optionsPanel.lifesOption.onCheckChange = function(_, checked)
-    if checked then
-        fugaInterface.optionsPanel.multipleOption:setChecked(false)
-        fugaInterface.optionsPanel.configValue:show()
-    elseif not fugaInterface.optionsPanel.multipleOption:isChecked() then
-        fugaInterface.optionsPanel.configValue:hide()
-    end
+local changeChildByIndex = function(sum)
+	local widget = screenWidget["mainPanel"]["spellsList"];
+	local child = widget:getFocusedChild();
+	if (not child) then return; end
+	local oldIndex = widget:getChildIndex(child);
+	local newIndex = oldIndex + sum;
+	local spells = config["spells"][config["selected_type"]];
+	spells[oldIndex]["index"] = newIndex;
+	spells[newIndex]["index"] = oldIndex;
+	table["sort"](spells, function(a,b) return a["index"] < b["index"] end);
+	doRefreshSpells();
+	widget:getChildByIndex(newIndex):focus();
 end
 
-fugaInterface.optionsPanel.multipleOption.onCheckChange = function(_, checked)
-    if checked then
-        fugaInterface.optionsPanel.lifesOption:setChecked(false)
-        fugaInterface.optionsPanel.configValue:show()
-    elseif not fugaInterface.optionsPanel.lifesOption:isChecked() then
-        fugaInterface.optionsPanel.configValue:hide()
-    end
+local checkLoadableConfigs = function()
+	local base_dir = tr("/elfo_scripts/storage/%s", worldName);
+	local files = g_resources["listDirectoryFiles"](base_dir);
+	
+	screenWidget["mainPanel"]["configList"]:clear();
+	screenWidget["mainPanel"]["configList"]:addOption(characterName);
+	for _, file in ipairs(files) do
+		local file_without_extension = file:gsub(".lua", "");
+		if (file_without_extension ~= characterName and file:ends(".lua")) then
+			local path = base_dir .. "/" .. file;
+			local content = g_resources["readFileContents"](path);
+			local status, data = pcall(function() return load("return " .. content)() end);
+			if (status and type(data) == "table" and data["especiaisConfig"]) then
+				screenWidget["mainPanel"]["configList"]:addOption(file_without_extension);
+			end
+		end
+	end
 end
 
-fugaInterface.insertSpell.onClick = function()
-    local spellName = fugaInterface.castSpell:getText():trim():lower()
-    local orangeMsg = fugaInterface.orangeSpell:getText():trim():lower()
-    if fugaInterface.sameSpell:isChecked() then orangeMsg = spellName end
-    local onScreen = fugaInterface.onScreen:getText():trim()
-    local hp = fugaHp:getValue()
-    local cdTotal = fugaCdTotal:getValue()
-    local cdActive = fugaCdActive:getValue()
-    local selectedKey = fugaInterface.hotkeyList:getCurrentOption().text
-    if spellName:len() == 0 or onScreen:len() == 0 or hp == 0 or cdTotal == 0 then return end
-
-    local spellConfig = {
-        spellCast = spellName,
-        orangeSpell = orangeMsg,
-        onScreen = onScreen,
-        selfHealth = hp,
-        rawCooldownActive = cdActive,
-        rawCooldownTotal = cdTotal,
-        keyPress = selectedKey,
-        cooldownTime = 0,
-        activeTime = 0,
-        enableTimeSpell = true,
-        enabled = true
-    }
-
-    if fugaInterface.optionsPanel.lifesOption:isChecked() then
-        spellConfig.enableLifes = true
-        spellConfig.amountLifes = fugaInterface.optionsPanel.configValue:getValue()
-        spellConfig.currentLifes = spellConfig.amountLifes
-    elseif fugaInterface.optionsPanel.multipleOption:isChecked() then
-        spellConfig.enableMultiple = true
-        spellConfig.amountUses = fugaInterface.optionsPanel.configValue:getValue()
-        spellConfig.currentUses = spellConfig.amountUses
-    end
-    if fugaInterface.optionsPanel.reviveOption:isChecked() then spellConfig.enableRevive = true end
-
-    table.insert(storage.fugaSpells, spellConfig)
-    reindexTable(storage.fugaSpells)
-    refreshFugaList()
-    persistFuga()
-    -- Reseta completamente o formulário após inserir, deixando pronto para a próxima macro.
-    -- Antes apenas os TextEdits eram limpos, então HP/CD/hotkey/opções permaneciam com os
-    -- valores da macro anterior.
-    fugaInterface.castSpell:clearText()
-    fugaInterface.orangeSpell:clearText()
-    fugaInterface.onScreen:clearText()
-
-    fugaHp:setValue(0)
-
-    fugaCdTotal:setValue(0)
-
-    fugaCdActive:setValue(0)
-
-    fugaInterface.hotkeyList:setCurrentOption('AUTO')
-
-    fugaInterface.sameSpell:setChecked(true)
-    fugaInterface.orangeSpell:setEnabled(false)
-
-    fugaInterface.optionsPanel.lifesOption:setChecked(false)
-    fugaInterface.optionsPanel.multipleOption:setChecked(false)
-    fugaInterface.optionsPanel.reviveOption:setChecked(false)
-    fugaInterface.optionsPanel.configValue:setValue(0)
-    fugaInterface.optionsPanel.configValue:hide()
+local loadConfig = function(name)
+	checkLoadableConfigs();
+	local base_dir = tr("/elfo_scripts/storage/%s", worldName);
+	if (screenWidget["mainPanel"]["configList"]:isOption(name)) then
+		local path = base_dir .. "/" .. name .. ".lua";
+		if (g_resources["fileExists"](path)) then
+			local content = g_resources["readFileContents"](path);
+			local status, data = pcall(function() return load("return " .. content)() end);
+			if (status and type(data) == "table" and data["especiaisConfig"]) then
+				UI["ConfirmationWindow"]("Load Config", tr("Deseja utilizar a configura\231\227o de %s?", name), function()
+					storage["shazamTyrFugasConfig"] = data["especiaisConfig"];
+					doConfigCheck();
+					doRefreshSpells();
+				end)
+			end
+		end
+	end
 end
 
-fugaInterface.moveUp.onClick = function()
-    local action = fugaInterface.spellList:getFocusedChild()
-    if not action then return end
-    local index = fugaInterface.spellList:getChildIndex(action)
-    if index < 2 then return end
-    fugaInterface.spellList:moveChildToIndex(action, index - 1)
-    storage.fugaSpells[index], storage.fugaSpells[index - 1] = storage.fugaSpells[index - 1], storage.fugaSpells[index]
-    reindexTable(storage.fugaSpells)
-    persistFuga()
+local addAnchors = function(widget)
+	local isLabel = widget:getStyleName() == "Label";
+	local hasAnyChild = registerWidget["mainPanel"]:getChildCount() ~= 1;
+	local lastAnchor = (hasAnyChild or not isLabel) and "prev" or "parent";
+	local lastDirection = (hasAnyChild or not isLabel) and AnchorBottom or AnchorTop;
+	widget:addAnchor(AnchorRight, "parent", AnchorRight);
+	widget:addAnchor(AnchorLeft, "parent", AnchorLeft);
+	widget:addAnchor(AnchorTop, lastAnchor, lastDirection);
 end
 
-fugaInterface.moveDown.onClick = function()
-    local action = fugaInterface.spellList:getFocusedChild()
-    if not action then return end
-    local index = fugaInterface.spellList:getChildIndex(action)
-    if index >= fugaInterface.spellList:getChildCount() then return end
-    fugaInterface.spellList:moveChildToIndex(action, index + 1)
-    storage.fugaSpells[index], storage.fugaSpells[index + 1] = storage.fugaSpells[index + 1], storage.fugaSpells[index]
-    reindexTable(storage.fugaSpells)
-    persistFuga()
+local createComboBox = function(data)
+	local label = UI["createWidget"]("Label", registerWidget["mainPanel"]);
+	addAnchors(label);
+	label:setMarginTop(7);
+	label:setMarginLeft(10);
+	label:setText(data["title"]);
+	local comboBox = UI["createWidget"]("ComboBox", registerWidget["mainPanel"]);
+	addAnchors(comboBox);
+	comboBox:setMarginLeft(10);
+	comboBox:setMarginRight(10);
+	for _, value in ipairs(data["values"]) do
+		comboBox:addOption(value);
+	end
+	comboBox:setId(data["var_name"]);
+	comboBox:setCurrentOption(data["text"]);
+	comboBox["menuScroll"] = true;
+	comboBox["menuScrollStep"] = 10;
 end
 
--- ============================================================================
--- MOTOR DE FUGAS
--- Baseado exclusivamente na lógica ESCAPE do sistema Especiais.
--- Mantém a contagem de mortes/vidas do Fugas.lua e o suporte a Izanagi.
--- ============================================================================
-
-local oldHealthPercent = hppercent()
-local armIzanagiRevive
-
-local function getAttackersAddition()
-    local attackers = 0
-    for _, expire in pairs(storageAttackers) do
-        if expire and expire >= os.time() then
-            attackers = attackers + 1
-        end
-    end
-    attackers = math.min(attackers, 6)
-    return attackers * 5
+local createTextEdit = function(data)
+	local label = UI["createWidget"]("Label", registerWidget["mainPanel"]);
+	addAnchors(label);
+	label:setMarginTop(7);
+	label:setMarginLeft(10);
+	label:setText(data["title"]);
+	local textEdit = UI["createWidget"]("TextEdit", registerWidget["mainPanel"]);
+	addAnchors(textEdit);
+	textEdit:setMarginLeft(10);
+	textEdit:setMarginRight(10);
+	textEdit:setText(data["text"]);
+	textEdit:setId(data["var_name"]);
 end
 
--- Mantém a regra do Especiais:
--- 100% = automático a partir de 45%, somando 5% por atacante.
-local function getEscapePercent(value)
-    local percent = tonumber(value) or 0
-    if percent == 100 then
-        percent = 45
-    end
-    percent = percent + getAttackersAddition()
-    return math.min(percent, 100)
+local createScrollBar = function(data)
+	local label = UI["createWidget"]("Label", registerWidget["mainPanel"]);
+	addAnchors(label);
+	label:setMarginTop(7);
+	label:setMarginLeft(10);
+	label:setText(data["title"]);
+	local scrollBar = UI["createWidget"]("HorizontalScrollBar", registerWidget["mainPanel"]);
+	addAnchors(scrollBar);
+	scrollBar:setMarginLeft(10);
+	scrollBar:setMarginRight(10);
+	scrollBar["onValueChange"] = function(widget, value)
+		local suffix = "s";
+		if (data["range"]["min"] == 1) then
+			suffix = "";
+		elseif (data["range"]["max"] == 100) then
+			suffix = "%";
+		end
+		widget:setText(value .. suffix);
+	end
+	scrollBar:setMinimum(data["range"]["min"]);
+	scrollBar:setMaximum(data["range"]["max"]);
+	scrollBar:setValue(data["text"] or data["range"]["min"]);
+	scrollBar:onValueChange(scrollBar:getValue());
+	scrollBar:setId(data["var_name"]);
 end
 
-local function hasAnyActiveFuga(currentSec)
-    for _, entry in ipairs(storage.fugaSpells or {}) do
-        if entry and entry.enabled and (tonumber(entry.activeTime) or 0) >= currentSec then
-            return true
-        end
-    end
-    return false
+doRegisterSpell = function(entry)
+	screenWidget:hide();
+	registerWidget:show();
+	registerWidget["mainPanel"]:destroyChildren();
+	for _, _data in ipairs(displayOptions) do
+		local data = table["copy"](_data);
+		if (data["ignore"] ~= nil) then
+			if (table["find"](data["ignore"], config["selected_type"])) then
+				break;
+			end
+		end
+		
+		if (data["skip"] ~= nil) then
+			if (table["find"](data["skip"], config["selected_type"])) then
+				goto continue;
+			end
+		end
+		local exclusive_data = data[config["selected_type"]];
+		if (exclusive_data ~= nil) then
+			if (data["range"] ~= nil and exclusive_data["range"] == nil) then
+				data["range"] = nil;
+			end
+			for key, value in pairs(exclusive_data) do
+				data[key] = value;
+			end
+		end
+		
+		if (data["default_value"] ~= nil) then
+			data["text"] = entry[data["default_value"]];
+		end
+		
+		if (entry[data["var_name"]] ~= nil) then
+			data["text"] = entry[data["var_name"]];
+		end
+		
+		if (data["var_name"] == "key") then
+			data["values"] = getAllKeys();
+		end		
+		
+		if (data["values"]) then
+			createComboBox(data);
+			goto continue;
+		end
+	
+		
+		if (data["range"]) then
+			createScrollBar(data);
+			goto continue;
+		end
+		createTextEdit(data);
+		::continue::
+		
+	end
 end
 
-local function canCastFuga(entry, currentSec)
-    if not entry or not entry.enabled then
-        return false
-    end
-
-    if (tonumber(entry.cooldownTime) or 0) >= currentSec then
-        return false
-    end
-
-    -- O Especiais não permite uma segunda fuga enquanto existe
-    -- uma fuga ativa.
-    if hasAnyActiveFuga(currentSec) then
-        return false
-    end
-
-    local key = entry.keyPress
-    local percent = tonumber(entry.selfHealth) or 0
-
-    -- AUTO / porcentagem.
-    if percent > 0 then
-        local healthPercent = hppercent()
-        if healthPercent < getEscapePercent(percent) then
-            return true
-        end
-    end
-
-    -- Hotkey manual.
-    if key and key ~= "AUTO"
-        and modules.corelib.g_keyboard.isKeyPressed(key)
-        and not modules.game_console:isChatEnabled() then
-        return true
-    end
-
-    return false
+local checkKeyPress = function(widget, pressed)
+	if (widget["pressed"] ~= pressed) then
+		local setMouseMouveFunction = not pressed and doRemoveMouseMove or doSetMouseMove;
+		setMouseMouveFunction(widget["entry"]);
+	end
 end
 
--- O Especiais respeita a ordem das fugas:
--- se uma fuga automática já está pronta para ser usada, as seguintes
--- automáticas não furam a fila. Hotkeys manuais continuam funcionando.
-local function doEscapeCast()
-    local spells = storage.fugaSpells or {}
-    if #spells == 0 then return end
+local doSetWidgetContent = function(widget)
+	local entry = widget["entry"];
+	
+	if (entry == "battlingStatus") then
+		return setBattleStatus();
+	end
+	
+	local time = os["time"]();
+	
+	
+	local color = "green";
+	local text = {tr("%s:", (entry["showMsg"] or entry["spellName"]):ucwords()), "0s"};
+	
+	local activeTime = (entry["activeTime"] or 0) - time;
+	local cooldownTime = (entry["cooldownTime"] or 0) - time;
+	local deathRemaining = (entry["death_max_count"] or 0) - (entry["death_count"] or 0);
+	
 
-    local currentSec = os.time()
-    local anyAutomaticReady = false
-
-    for _, entry in ipairs(spells) do
-        if entry and entry.enabled then
-            local key = entry.keyPress
-            local isManualKey = key and key ~= "AUTO"
-
-            if not isManualKey
-                and (tonumber(entry.rawCooldownTotal) or 0) > 0 then
-
-                if anyAutomaticReady then
-                    goto continue
-                end
-
-                if (tonumber(entry.cooldownTime) or 0) < currentSec then
-                    anyAutomaticReady = true
-                end
-            end
-
-            if canCastFuga(entry, currentSec) then
-                -- A fuga foi disparada: o cooldown/tempo ativo será
-                -- confirmado pela mensagem laranja, como no Especiais.
-                say(entry.spellCast)
-
-                if entry.enableRevive
-                    and tostring(entry.spellCast or ''):lower() == 'izanagi' then
-                    armIzanagiRevive()
-                end
-
-                lastCastAttempt = 4
-                return
-            end
-
-            ::continue::
-        end
-    end
+	
+	if (activeTime >= 0) then
+		local value = tr("%ds", activeTime);
+		color = "orange";
+		text[2] = value;
+		
+		if (deathRemaining > 0) then
+			local value = "[" .. deathRemaining .. "]";
+			text[3] = value;
+		end
+	elseif (cooldownTime >= 0) then
+		local value = tr("%ds", cooldownTime);
+		color = "red";
+		text[2] = value;
+	else
+		entry["cooldownTime"] = nil;
+		entry["activeTime"] = nil;
+	end
+	
+	
+	text = table["concat"](text, " ");
+	if (widget["_color"] ~= color or widget["_text"] ~= text) then
+		widget:setColor(color);
+		widget:setText(text);
+		
+		widget["_text"] = text;
+		widget["_color"] = color;
+	end
 end
 
--- Recebe a confirmação da fuga pela mensagem laranja.
--- Essa parte segue a mecânica do Especiais: cooldown e tempo ativo
--- começam somente quando o servidor confirma o uso.
-onTalk(function(name, level, mode, text)
-    if mode ~= 44 or name ~= g_game.getCharacterName() then return end
+botWidget["switch"]["onClick"] = function()
+	local status = not botWidget["switch"]:isOn();
+	config["enabled"] = status;
+	botWidget["switch"]:setOn(status);
+	doRefreshSpells();
+end
 
-    local txt = text:trim():lower()
-    local currentSec = os.time()
+botWidget["config"]["onClick"] = function()
+	screenWidget:show();
+end
 
-    -- Izanagi: registra a posição de origem no momento da confirmação.
-    if txt == 'izanagi' then
-        for _, entry in ipairs(storage.fugaSpells or {}) do
-            if entry and entry.enabled and entry.enableRevive
-                and tostring(entry.spellCast or ''):lower() == 'izanagi' then
-                local origin = player:getPosition()
-                if origin then
-                    izanagiReviveState.pending = true
-                    izanagiReviveState.died = false
-                    izanagiReviveState.origin = {
-                        x = origin.x, y = origin.y, z = origin.z
-                    }
-                    izanagiReviveState.lastPos = {
-                        x = origin.x, y = origin.y, z = origin.z
-                    }
-                end
-                break
-            end
-        end
-    end
+screenWidget["onEscape"] = function()
+	screenWidget:hide();
+	gameRootPanel:focus();
+end
 
-    for _, entry in ipairs(storage.fugaSpells or {}) do
-        if entry and txt == tostring(entry.orangeSpell or ''):lower() then
-            local rawTotalSec = tonumber(entry.rawCooldownTotal) or 0
-            local rawActiveSec = tonumber(entry.rawCooldownActive) or 0
+registerWidget["backButton"]["onClick"] = function()
+	registerWidget:hide();
+	screenWidget:show();
+end
 
-            if (tonumber(entry.cooldownTime) or 0) < currentSec then
-                if entry.enableLifes then
-                    -- Primeira confirmação inicia o ciclo completo.
-                    -- As confirmações seguintes não consomem vidas:
-                    -- a vida é consumida somente quando uma morte é detectada.
-                    if not entry.activeTime or entry.activeTime < currentSec then
-                        entry.currentLifes = tonumber(entry.amountLifes) or 1
-                    end
-                    entry.cooldownTime = currentSec + rawTotalSec
-                    entry.activeTime = currentSec + rawActiveSec
+infoCheckBox["onCheckChange"] = function(widget, checked)
+	config["showInfo"] = checked;
+	doRefreshSpells();
+end
 
-                elseif entry.enableMultiple then
-                    if not entry.activeTime or entry.activeTime < currentSec then
-                        entry.currentUses = tonumber(entry.amountUses) or 1
-                    end
-                    entry.cooldownTime = currentSec + rawTotalSec
-                    entry.activeTime = currentSec + rawActiveSec
+screenWidget["mainPanel"]["configList"]["onOptionChange"] = function(widget, option)
+	if (option == characterName) then return; end
+	loadConfig(option);
+	screenWidget["mainPanel"]["configList"]:setOption(characterName);
+end
 
-                else
-                    entry.cooldownTime = currentSec + rawTotalSec
-                    entry.activeTime = currentSec + rawActiveSec
-                end
+screenWidget["mainPanel"]["typeList"]["onOptionChange"] = function(widget, option)
+	if (config == nil) then return; end
+	config["selected_type"] = option;
+	doRefreshSpells();
+end
 
-                persistFuga()
-            end
+screenWidget["mainPanel"]["spellsList"]["onMousePress"] = function(widget, pos)
+	moveStart = now;
+end
 
-            break
-        end
-    end
-end)
+screenWidget["mainPanel"]["spellsList"]["onMouseRelease"] = function(widget, pos)
+	if (not moveStart) then 
+		return; 
+	end
+	if (now - moveStart < 30) then 
+		return; 
+	end
+	local changeChild = widget:getFocusedChild();
+	if (not changeChild) then 
+		return; 
+	end
+	local selectedChild = widget:getChildByPos(pos);
+	if (not selectedChild or changeChild == selectedChild) then 
+		return; 
+	end
+	
+	local changeWidgetIndex = widget:getChildIndex(changeChild);
+	local selectedWidgetIndex = widget:getChildIndex(selectedChild);
+	
+	local diff = math["abs"](selectedWidgetIndex - changeWidgetIndex);
+	local step = changeWidgetIndex > selectedWidgetIndex and -1 or 1;
+	
+	for i = 1, diff do
+		changeChildByIndex(step);
+	end
+	
+end
 
--- ============================================================================
--- CONTAGEM DE MORTES / VIDAS
--- Mantida do Fugas.lua, mas agora compatível com a mecânica do Especiais:
--- a carga só é consumida quando o HP sobe bruscamente após a morte.
--- ============================================================================
+screenWidget["mainPanel"]["addButton"]["onClick"] = function()
+	local spellName = screenWidget["mainPanel"]["nameField"]:getText():lower():trim();
+	local spells = config["spells"][config["selected_type"]];
+	if (table["size"](spells) == spellsLimits[config["selected_type"]]) then
+		warn("Limite FREE Atingido");
+		screenWidget["mainPanel"]["message"]:setColor("red");
+		return;
+	end
+			
+		
+	
+	if (spellName:len() == 0) then
+		warn("Insira uma magia!");
+		return;
+	end
+
+	for _, entry in ipairs(spells) do
+		if (entry["spellName"] == spellName) then
+			error("Essa magia j\225 existe");
+			return;
+		end
+	end
+	
+	doRegisterSpell({spellName=spellName});
+end
+
+registerWidget["addButton"]["onClick"] = function()
+	local children = registerWidget["mainPanel"]:getChildren();
+	local spellName = screenWidget["mainPanel"]["nameField"]:getText():trim():lower();
+	local spells = config["spells"][config["selected_type"]];
+	local entry = {
+		spellName=spellName, 
+		enabled=true,
+		type = config["selected_type"],
+		index = table["size"](spells) + 1,
+		spellTime=table["find"](spellsDefaultShowTime, config["selected_type"])
+	};
+	for _, child in ipairs(children) do
+		local value;
+		local var_name = child:getId();
+		local styleName = child:getStyleName();
+		if (styleName == "ComboBox") then
+			value = child:getCurrentOption()["text"];
+			if (value == "None") then
+				value = nil;
+			end
+		elseif (styleName == "TextEdit") then
+			local text = child:getText():trim():lower();
+			if (text:len() >= 1) then
+				value = text;
+			end
+		elseif (styleName == "HorizontalScrollBar") then
+			value = child:getValue();
+		end
+		if (value ~= nil) then
+			entry[var_name] = value;
+		end
+	end
+	
+	if (entry["key"] == "AUTO" and (tonumber(entry["percent"]) or 0) > 0) then
+		entry["key"] = nil;
+	end
+	
+	if (entry["percent"] == 0) then
+		entry["percent"] = nil;
+	end
+	
+	
+	table["insert"](spells, table["copy"](entry));
+	
+	doRefreshSpells();
+	screenWidget:show();
+	registerWidget:hide();
+	screenWidget["mainPanel"]["nameField"]:clearText();
+end
+
+local getFugaSpellData = function(name)
+	name = name:trim():lower();
+	for _, entries in pairs(config["spells"]) do
+		for _, entry in pairs(entries) do
+			if (entry["spellName"] == name) then
+				return entry;
+			end
+		end
+	end
+end
+
+warn = function(msg)
+	local widget = screenWidget["mainPanel"]["message"];
+	widget["added"] = now + 3000;
+	
+	widget:setText(msg);
+	widget:setColor("yellow");
+end
+
+
+for _, option in ipairs(spellsOptions) do
+	screenWidget["mainPanel"]["typeList"]:addOption(option);
+	spellsLimits[option] = math["huge"];
+end
+
+for index, key in ipairs(wasdKeys) do
+	local currentValue = stackDirections[key];
+	if (index <= 4) then
+		local arrowKey = arrowKeys[index];
+		stackDirections[arrowKey] = currentValue;
+	end
+	
+	local numpadKey = numpadKeys[index];
+	stackDirections[numpadKey] = currentValue;
+end
+
+if (FUGAS_RESTRICTED_MODE) then
+	spellsLimits[spellsTypes["ESCAPE"]] = 2;
+	spellsLimits[spellsTypes["TRAP"]] = 2;
+	spellsLimits[spellsTypes["STACK"]] = 0;
+	spellsLimits[spellsTypes["STRAIGHT"]] = 0;
+	spellsLimits[spellsTypes["BUFF"]] = 1;
+end
+
+
+doConfigCheck();
+screenWidget["mainPanel"]["typeList"]:setCurrentOption(config["selected_type"]);
+screenWidget["mainPanel"]["configList"]["menuScroll"] = true;
+screenWidget["mainPanel"]["configList"]["mouseScroll"] = false;
+screenWidget["onEnter"] = screenWidget["mainPanel"]["addButton"]["onClick"];
+screenWidget["mainPanel"]["closeButton"]["onClick"] = screenWidget["onEscape"];
+
+
+
+screenWidget:hide()
+registerWidget:hide();
+checkLoadableConfigs();
+doRefreshSpells();
+
+
+if (config["enabled"]) then
+	botWidget["switch"]:setOn(config["enabled"]);
+end
+
+if (config["showInfo"]) then
+	infoCheckBox:setChecked(true);
+end
+
 
 onCreatureHealthPercentChange(function(creature, percent)
-    if creature ~= player or percent == nil then return end
-
-    local diff = percent - oldHealthPercent
-    oldHealthPercent = percent
-
-    -- O Especiais considera uma subida >= 85 pontos como retorno após morte.
-    if diff < 85 then return end
-
-    local currentSec = os.time()
-    local changed = false
-
-    for _, entry in ipairs(storage.fugaSpells or {}) do
-        if entry and entry.enabled and entry.enableLifes then
-            local activeTime = tonumber(entry.activeTime) or 0
-
-            if activeTime >= currentSec then
-                local currentLifes = tonumber(entry.currentLifes)
-                    or tonumber(entry.amountLifes)
-                    or 1
-
-                if currentLifes > 0 then
-                    currentLifes = currentLifes - 1
-                    entry.currentLifes = currentLifes
-                    changed = true
-                end
-
-                -- Ao atingir o limite de mortes, encerra o estado ativo,
-                -- exatamente como o controle death_max_count do Especiais.
-                if currentLifes <= 0 then
-                    entry.activeTime = nil
-                    entry.cooldownTime = nil
-                    entry.currentLifes = tonumber(entry.amountLifes) or 1
-                end
-            end
-        end
-    end
-
-    if changed then
-        persistFuga()
-    end
+	if (creature ~= player) then
+		return;
+	end
+	
+	if (percent == nil) then
+		return;
+	end
+	
+	local diff = percent - oldPercent;
+	oldPercent = percent;
+	if (diff < 85) then
+		return;
+	end
+	
+	for spellName, entry in pairs(config["spells"]) do
+		if (entry["type"] == spellsTypes["ESCAPE"]) then
+			if (not entry["death_max_count"]) then
+				entry["activeTime"] = nil;
+			else
+				entry["death_count"] = (entry["death_count"] or 0) + 1;
+				if (entry["death_count"] >= entry["death_max_count"]) then
+					entry["activeTime"] = nil;
+					entry["death_count"] = nil;
+				end
+			end
+		end
+	end
 end)
 
--- Controle específico do ciclo do Izanagi.
-armIzanagiRevive = function()
-    local origin = player:getPosition()
-    if not origin then return end
 
-    izanagiReviveState.pending = true
-    izanagiReviveState.died = false
-    izanagiReviveState.origin = {
-        x = origin.x, y = origin.y, z = origin.z
-    }
-    izanagiReviveState.lastPos = {
-        x = origin.x, y = origin.y, z = origin.z
-    }
-end
+onTalk(function(name, level, mode, text)
+	if (mode ~= 44) then return; end
+	if (name ~= characterName) then return; end
+	
+	text = text:trim():lower();
+	for _, data in pairs(config["spells"]) do
+		for _, entry in ipairs(data) do
+			if (entry["orangeMsg"] == text and (entry["cooldownTime"] or 0) < os["time"]()) then
+			
+				local cooldownTotal = (entry["cooldownTotal"] or 0);
+				if (cooldownTotal > 0) then
+					entry["cooldownTime"] = os["time"]() + cooldownTotal;
+				end
+				
+				if (entry["activeTotal"] and entry["activeTotal"] > 0) then
+					entry["activeTime"] = os["time"]() + entry["activeTotal"];
+				end
+				
+				if (stackData and table["equal"](entry, stackData["entry"])) then
+					doCancelStack();
+				end
+				
+				break;
+			end
+		end
+	end
 
-local function resetIzanagiState()
-    local changed = false
+end)
 
-    for _, entry in ipairs(storage.fugaSpells or {}) do
-        if entry and entry.enableRevive
-            and tostring(entry.spellCast or ''):lower() == 'izanagi' then
-
-            -- Encerra somente o tempo ativo. O cooldownTime é mantido, pois ele
-            -- já foi calculado como (momento do cast + CD Total). Assim, se você
-            -- morreu com 7s de 10s ativos e o CD é 75s, sobram 68s de cooldown.
-            entry.activeTime = 0
-
-            if entry.enableLifes then
-                entry.currentLifes = tonumber(entry.amountLifes) or 1
-            end
-
-            if entry.enableMultiple then
-                entry.currentUses = tonumber(entry.amountUses) or 1
-            end
-
-            changed = true
-        end
-    end
-
-    if changed then persistFuga() end
-
-    izanagiReviveState.pending = false
-    izanagiReviveState.died = false
-    izanagiReviveState.origin = nil
-    izanagiReviveState.lastPos = nil
-end
-
-local function distance2D(a, b)
-    if not a or not b then return 999999 end
-    return math.max(math.abs(a.x - b.x), math.abs(a.y - b.y))
-end
-
-local function safePlayerIsDead()
-    if not player then return false end
-
-    if type(player.isDead) == 'function' then
-        local ok, result = pcall(function() return player:isDead() end)
-        if ok and result == true then return true end
-    end
-
-    if type(player.getHealth) == 'function' then
-        local ok, hp = pcall(function() return player:getHealth() end)
-        if ok and tonumber(hp) and tonumber(hp) <= 0 then return true end
-    end
-
-    local ok, hp = pcall(function() return hppercent() end)
-    if ok and tonumber(hp) and tonumber(hp) <= 0 then return true end
-
-    return false
-end
-
-local function trackIzanagiRevive()
-    if not izanagiReviveState.pending or not izanagiReviveState.origin then return end
-
-    local pPos = player:getPosition()
-    if not pPos then return end
-
-    local deadNow = safePlayerIsDead()
-
-    if deadNow then
-        izanagiReviveState.died = true
-        izanagiReviveState.lastPos = {
-            x = pPos.x, y = pPos.y, z = pPos.z
-        }
-        return
-    end
-
-    if izanagiReviveState.died then
-        local sameFloor = pPos.z == izanagiReviveState.origin.z
-        local nearOrigin = distance2D(pPos, izanagiReviveState.origin) <= 3
-
-        if sameFloor and nearOrigin then
-            resetIzanagiState()
-            return
-        end
-    end
-
-    izanagiReviveState.lastPos = {
-        x = pPos.x, y = pPos.y, z = pPos.z
-    }
-end
-
--- Registro de atacantes: SOMENTE PLAYERS, igual ao Especiais da Tyr Livre.
--- A mensagem de dano so serve como gatilho; o nome so entra na lista se existir
--- na tela uma criatura correspondente e ela for realmente um player.
 onTextMessage(function(mode, text)
-    if not text or not text:find("attack by") then return end
-
-    local spectators = (ShazamCore and ShazamCore.getSpectators(false, 80) or getSpectators())
-    if not spectators then return end
-
-    for _, spec in ipairs(spectators) do
-        if spec and spec:isPlayer() and spec ~= player then
-            local specName = spec:getName()
-            if specName and text:find(specName, 1, true) then
-                storageAttackers[specName] = os.time() + 1
-                break
-            end
-        end
-    end
+	if (not text:find("attack by")) then return; end
+	text = text:sub(9);
+	
+	local getSpectators = getSpectators;
+	for _, spec in ipairs(getSpectators()) do
+		if (spec:isPlayer()) then
+			local specName = spec:getName();
+			if (text:find(specName)) then
+				config["attackers"][specName] = os["time"]() + 1;
+				break
+			end
+		end
+	end
 end)
 
--- Limpeza dos atacantes, como no Especiais.
-macro(500, function()
-    if not storage.fugaSettings.isOn then return end
-    local currentSec = os.time()
-
-    for name, expire in pairs(storageAttackers) do
-        if expire < currentSec then
-            storageAttackers[name] = nil
-        end
-    end
+onTextMessage(function(mode, text)
+	if (worldName ~= "NtoUltimate") then return; end
+	if (text:find("jutsu foi selado")) then
+		local time = tonumber(text:match("%d+"));
+		if (time ~= nil) then
+			for _, entry in pairs(config["spells"][spellsTypes["BUFF"]]) do
+				entry["cooldownTime"] = os["time"]() + time;
+			end
+		end
+	end
 end)
 
--- Motor principal das fugas.
+if (modules["_G"]["buffData"] == nil) then
+	modules["_G"]["buffData"] = {};
+end
+local buffData = modules["_G"]["buffData"];
+macro(1, function(self)
+	if (worldName ~= "NtoUltimate") then
+		self:setOff();
+		return;
+	end
+	
+	local currentMedicine = player:getSkillLevel(3);
+	
+	if (buffData["medicineLast"] ~= nil and buffData["medicineLast"] - currentMedicine > 50) then
+		local time = os["time"]() + 5;
+		for _, entry in pairs(config["spells"][spellsTypes["BUFF"]]) do
+			local cooldownTime = (entry["cooldownTime"] or 0);
+			if (cooldownTime > time) then
+				entry["cooldownTime"] = nil;
+			end
+		end
+	end
+	
+	buffData["medicineLast"] = currentMedicine;
+	
+	
+		
+		
+	
+	
+
+	
+		
+	
+	
+	
+		
+	
+end)
+
+macro(1, function(self)
+	if (worldName ~= "NtoUltimate") then
+		self:setOff();
+		return;
+	end
+	
+	
+	local spellData = getFugaSpellData("Kawarimi no jutsu");
+	if (spellData == nil) then return; end
+	local time = os["time"]();
+	
+	if (spellData["setActiveTime"]) then 
+		local cooldownTime = (spellData["cooldownTime"] or 0);
+		if (cooldownTime < time) then
+			spellData["setActiveTime"] = nil;
+		end
+		return; 
+	end
+	
+	local activeTime = (spellData["activeTime"] or 0);
+	if (activeTime < time) then
+		return;
+	end
+	
+	local playerPos = player:getPosition();
+	for x = -1, 1 do
+		for y = -1, 1 do
+			local tile = g_map["getTile"]({x=playerPos["x"]+x, y=playerPos["y"]+y, z=playerPos["z"]});
+			if (tile ~= nil) then
+				for _, item in ipairs(tile:getItems()) do
+					if (item:getId() == 5945) then
+						spellData["setActiveTime"] = true;
+						spellData["activeTime"] = time + 4;
+						return;
+					end
+				end
+			end
+		end
+	end
+end)
+
+macro(1, function()
+	local widget = screenWidget["mainPanel"]["message"];
+	
+	if (widget["added"]) then
+		if (widget["added"] < now) then
+			widget["added"] = nil;
+		elseif (widget:isHidden()) then
+			widget:show();
+		end
+	end
+	
+	
+	if (widget["added"] == nil) then
+		if (widget:isVisible()) then
+			widget:hide();
+		end
+		return;
+	end
+end)
+
 macro(100, function()
-    if not storage.fugaSettings.isOn or isInPz() then return end
-
-    trackIzanagiRevive()
-
-    if lastCastAttempt > 0 then
-        lastCastAttempt = lastCastAttempt - 1
-        return
-    end
-
-    doEscapeCast()
+	local currentTime = os["time"]();
+	for name, time in pairs(config["attackers"]) do
+		if (time < currentTime) then
+			config["attackers"][name] = nil;
+		end
+	end
 end)
 
--- Atualização visual (desacoplada do motor; nao precisa competir a cada 250ms).
-macro(300, function()
-    if not storage.fugaSettings.isOn then
-        -- Fugas OFF sempre esconde TUDO da tela, independentemente da
-        -- preferencia salva do Monitor de Fugas.
-        if fugaStatusWidget then fugaStatusWidget:hide() end
-        for _, widget in pairs(fugaSpellsWidgets or {}) do widget:hide() end
-        return
-    end
-    updateFugaStatusWidget()
-
-    local currentSec = os.time()
-
-    for _, spellConfig in ipairs(storage.fugaSpells or {}) do
-        local widget = fugaSpellsWidgets[spellConfig.spellCast]
-
-        if widget then
-            -- Visibilidade é independente do cooldown: desligar a macro só esconde
-            -- o TimeSpell; cooldownTime/activeTime permanecem intactos.
-            if storage.fugaSettings.isOn and spellConfig.enableTimeSpell then
-                widget:show()
-            else
-                widget:hide()
-            end
-
-            local textToSet = firstLetterUpper(spellConfig.onScreen)
-            local color = "green"
-
-            if spellConfig.enableLifes
-                and (spellConfig.currentLifes or 0) <= 0
-                and spellConfig.cooldownTime
-                and spellConfig.cooldownTime > currentSec then
-
-                textToSet = textToSet .. ': ' .. formatRemainingTime(spellConfig.cooldownTime)
-                color = "#FF4040"
-
-            elseif spellConfig.enableMultiple
-                and (spellConfig.currentUses or 0) <= 0
-                and spellConfig.cooldownTime
-                and spellConfig.cooldownTime > currentSec then
-
-                textToSet = textToSet .. ': ' .. formatRemainingTime(spellConfig.cooldownTime)
-                color = "#FF4040"
-
-            elseif spellConfig.activeTime and spellConfig.activeTime > currentSec then
-                textToSet = textToSet .. ': ' .. formatRemainingTime(spellConfig.activeTime)
-                color = "#00FFFF"
-
-            elseif spellConfig.cooldownTime and spellConfig.cooldownTime > currentSec then
-                textToSet = textToSet .. ': ' .. formatRemainingTime(spellConfig.cooldownTime)
-                color = "#FF4040"
-
-            else
-                textToSet = textToSet .. ': Pronto!'
-            end
-
-            if spellConfig.enableLifes and spellConfig.currentLifes then
-                textToSet = '[' .. spellConfig.currentLifes .. ' Mortes] ' .. textToSet
-            elseif spellConfig.enableMultiple and spellConfig.currentUses then
-                textToSet = '[' .. spellConfig.currentUses .. ' Usos] ' .. textToSet
-            end
-
-            widget:setText(textToSet)
-            widget:setColor(color)
-        end
-    end
+macro(50, function()
+	if (not config["enabled"]) then return; end
+	if (isInPz()) then return; end
+	
+	if (stackData ~= nil and not g_mouse["isPressed"](3)) then
+		doCancelStack();
+	end
+	
+	if (stackData ~= nil) then
+		
+		
+			
+		
+		doStack();
+	end
+	
+	for _, type in ipairs(spellsOptions) do
+		doSpellCast(type);
+	end
 end)
 
--- Sincroniza a lista principal com o storage usado pelo motor melhorado.
-refreshFugaMainList = function()
-    local list = fugaMainScreen.mainPanel.spellsList
-    for _, child in pairs(list:getChildren()) do child:destroy() end
-
-    for index, entry in ipairs(storage.fugaSpells or {}) do
-        local row = setupUI(FUGA_MAIN_ENTRY, list)
-        row:setId("fuga_" .. tostring(index))
-        row.enabled:setChecked(entry.enabled == true)
-        row.spellTime:setChecked(entry.enableTimeSpell == true)
-
-        local keyText = (entry.keyPress and entry.keyPress ~= "AUTO") and (" | Key: " .. entry.keyPress) or ""
-        local hpText = tostring(entry.selfHealth or 0) .. "%"
-        row:setText(firstLetterUpper(entry.spellCast or "") .. " | " .. hpText .. keyText)
-
-        row.enabled.onCheckChange = function(_, checked)
-            entry.enabled = checked
-            persistFuga()
-        end
-        row.spellTime.onCheckChange = function(_, checked)
-            entry.enableTimeSpell = checked
-            local sw = fugaSpellsWidgets[entry.spellCast]
-            if sw then
-                if storage.fugaSettings.isOn and checked then sw:show() else sw:hide() end
-            end
-            persistFuga()
-        end
-        row.remove.onClick = function()
-            table.remove(storage.fugaSpells, index)
-            reindexTable(storage.fugaSpells)
-            refreshFugaList()
-            refreshFugaMainList()
-            persistFuga()
-        end
-        row.onDoubleClick = function()
-            -- Reaproveita o editor completo do Fugas para não perder Vidas/Multi/Revive.
-            fugaInterface.castSpell:setText(entry.spellCast or "")
-            fugaInterface.orangeSpell:setText(entry.orangeSpell or entry.spellCast or "")
-            fugaInterface.onScreen:setText(entry.onScreen or entry.spellCast or "")
-            fugaHp:setValue(entry.selfHealth or 0)
-            fugaCdTotal:setValue(entry.rawCooldownTotal or 0)
-            fugaCdActive:setValue(entry.rawCooldownActive or 0)
-            if entry.keyPress then fugaInterface.hotkeyList:setCurrentOption(entry.keyPress) end
-            fugaInterface.optionsPanel.lifesOption:setChecked(entry.enableLifes == true)
-            fugaInterface.optionsPanel.multipleOption:setChecked(entry.enableMultiple == true)
-            fugaInterface.optionsPanel.reviveOption:setChecked(entry.enableRevive == true)
-            if entry.enableLifes then
-                fugaInterface.optionsPanel.configValue:show()
-                fugaInterface.optionsPanel.configValue:setValue(entry.amountLifes or 4)
-            elseif entry.enableMultiple then
-                fugaInterface.optionsPanel.configValue:show()
-                fugaInterface.optionsPanel.configValue:setValue(entry.amountUses or 2)
-            else
-                fugaInterface.optionsPanel.configValue:hide()
-            end
-            table.remove(storage.fugaSpells, index)
-            reindexTable(storage.fugaSpells)
-            refreshFugaList()
-            refreshFugaMainList()
-            fugaMainScreen:hide()
-            fugaInterface:show(); fugaInterface:raise(); fugaInterface:focus()
-        end
-    end
-end
-
-fugaMainScreen.mainPanel.addButton.onClick = function()
-    local spell = fugaMainScreen.mainPanel.nameField:getText():trim():lower()
-    if spell:len() == 0 then
-        fugaMainScreen.mainPanel.message:setText("Insira uma magia!")
-        fugaMainScreen.mainPanel.message:setColor("red")
-        return
-    end
-    fugaMainScreen.mainPanel.message:setText("")
-    fugaInterface.castSpell:setText(spell)
-    fugaInterface.orangeSpell:setText(spell)
-    fugaInterface.onScreen:setText(spell)
-    fugaMainScreen:hide()
-    fugaInterface:show(); fugaInterface:raise(); fugaInterface:focus()
-end
-
-fugaMainScreen.mainPanel.closeButton.onClick = function()
-    fugaMainScreen:hide()
-end
-fugaMainScreen.onEscape = function()
-    fugaMainScreen:hide()
-    if gameRootPanel then gameRootPanel:focus() end
-end
-fugaMainScreen.mainPanel.showInfo:setChecked(storage.fugaSettings.showInfo ~= false)
-fugaMainScreen.mainPanel.showInfo.onCheckChange = function(_, checked)
-    storage.fugaSettings.showInfo = checked
-    fugaInterface.showInfo:setChecked(checked)
-    fugaMonitorCheck:setChecked(checked)
-    persistFuga()
-    updateFugaStatusWidget()
-end
-
--- Os checkboxes antigos ficavam dentro das janelas de configuracao (inclusive
--- perto do botao Fechar). Agora o controle oficial e "Monitor de Fugas" abaixo
--- da macro, entao escondemos os antigos para nao haver controles duplicados.
-fugaInterface.showInfo:hide()
-fugaMainScreen.mainPanel.showInfo:hide()
-
--- Ao fechar o editor detalhado, volta para a tela principal no padrão Especiais.
-fugaInterface.closeButton.onClick = function()
-    fugaInterface:hide()
-    refreshFugaMainList()
-    fugaMainScreen:show(); fugaMainScreen:raise(); fugaMainScreen:focus()
-end
-
-refreshFugaList()
-refreshFugaMainList()
-updateFugaStatusWidget()
+local widgetPos;
+macro(1, function()
+	if (widgetPos ~= nil) then
+		local widgets = {screenWidget, registerWidget};
+		for _, widget in ipairs(widgets) do
+			if (widget:isHidden()) then
+				widget:breakAnchors();
+				widget:setPosition(widgetPos);
+			end
+		end
+		widgetPos = nil;
+	end
+	if (screenWidget:isVisible()) then
+		widgetPos = screenWidget:getPosition();
+	elseif (registerWidget:isVisible()) then
+		widgetPos = registerWidget:getPosition();
+	end
+end)
 
 
--- Atalhos: registra esta macro para aparecer na janela Atalhos (aba User).
-do
-  local g = (type(_G) == "table" and _G) or modules["_G"]
-  g.configData = g.configData or {}
-  g.configData["fugas"] = {macro = fugaIcon.title}
-end
+macro(storage["scrollBars"] and storage["scrollBars"]["macroDelay"] or 50, function()
+	if (not config["enabled"]) then return; end
+	local dragKeyPressed = isDragKeyPressed();
+
+	local widgets = getAllScreenWidgets();
+	for _, widget in ipairs(widgets) do
+		checkKeyPress(widget, dragKeyPressed);
+		doSetWidgetContent(widget);
+	end
+end)
+
+-- Fugas independente: sem registro em tyrBot.
