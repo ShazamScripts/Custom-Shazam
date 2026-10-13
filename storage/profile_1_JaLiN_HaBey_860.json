@@ -1,0 +1,602 @@
+{
+  "caveBotTasker": {
+    "max": 0,
+    "monster": "",
+    "inProgress": false,
+    "monster2": "",
+    "taskName": "",
+    "count": 0
+  },
+  "taskData": [
+
+  ],
+  "stairsConfig": {
+    "actionKey": "Space",
+    "enabled": false
+  },
+  "pillContent": "Nhack Nhack",
+  "fugaSettings": {
+    "infoPos": {
+      "y": 45,
+      "x": 10
+    },
+    "isOn": false,
+    "showInfo": true
+  },
+  "pillId": 11821,
+  "regenSpell": "Big Regeneration",
+  "battleTracking": [
+    0,
+    268436366,
+    [
+
+    ]
+  ],
+  "bijuuBuff": "bijuu yaiba",
+  "bijuuRegen": "bijuu regeneration",
+  "attackEnemy": {
+    "macroActive": false,
+    "friendList": [
+
+    ]
+  },
+  "PotionsSystem": {
+    "enabled": false
+  },
+  "autoKaiConfig": {
+    "myRemoveSpell": "Kai",
+    "macroActive": false
+  },
+  "checkBoxs": {
+    "autoRegen": true,
+    "antiLyze": false,
+    "markAttacking": false,
+    "autoHaste": true,
+    "useKunai": false,
+    "useBijuu": false,
+    "usePill": false
+  },
+  "TravelSystem": {
+    "minoru": {
+      "index": 1
+    },
+    "gate keaper": {
+      "index": 2
+    }
+  },
+  "jumps": {
+    "hotkey": "f",
+    "enabled": false,
+    "savePositions": true
+  },
+  "kunaiId": 7382,
+  "rtsFollow": "Nome do player",
+  "config": {
+    "followTarget": {
+      "activatedIcon": false,
+      "iconId": 80,
+      "actionKey": "Tab"
+    },
+    "potion": {
+      "iconId": 88,
+      "activatedIcon": false
+    },
+    "enemy": {
+      "iconId": 79,
+      "activatedIcon": false
+    },
+    "buffs": {
+      "iconId": 85,
+      "activatedIcon": false
+    },
+    "jump": {
+      "iconId": 56,
+      "activatedIcon": false
+    },
+    "bugMap": {
+      "activatedIcon": false,
+      "iconId": 38,
+      "extra": {
+        "Left": "A",
+        "Right": "D",
+        "Up": "W",
+        "Down": "S"
+      }
+    },
+    "especiais": {
+      "iconId": 56,
+      "activatedIcon": false
+    },
+    "sense": {
+      "activatedIcon": false,
+      "iconId": 30,
+      "extra": {
+        "senseTarget": "T",
+        "senseLast": "V"
+      }
+    },
+    "antiTrap": {
+      "iconId": 65,
+      "activatedIcon": false
+    },
+    "autoEscadas": {
+      "iconId": 83,
+      "activatedIcon": false
+    },
+    "attackTarget": {
+      "iconId": 28,
+      "activatedIcon": false
+    },
+    "fugas": {
+      "iconId": 2,
+      "activatedIcon": false
+    },
+    "combo": {
+      "iconId": 89,
+      "activatedIcon": false
+    }
+  },
+  "bijuuOutfit": 0,
+  "widgetPos": {
+    "pkTimeWidget": {
+      "y": 144,
+      "x": 834
+    }
+  },
+  "_sense_spell": "Sense",
+  "hasteSpell": "Concentrate Chakra Feet",
+  "extras": {
+    "huntRoutes": 50,
+    "looting": 40,
+    "killUnder": 30,
+    "talkDelay": 200,
+    "gotoMaxDistance": 40,
+    "lootDelay": 200
+  },
+  "_macros": {
+    "": false,
+    "Attack Target": true,
+    "Stamina": true,
+    "Follow Target": true,
+    "Bug Map": false
+  },
+  "scrollBars": {
+    "distanceKunai": 10,
+    "regenPercent": 100,
+    "macroDelay": 50
+  },
+  "sealedTypes": [
+
+  ],
+  "ChakraPotion": {
+    "enabled": false,
+    "percent": 70,
+    "id": 23510
+  },
+  "fugaSpells": [
+
+  ],
+  "caveBot": [
+
+  ],
+  "excludeIds": [
+    {
+      "id": 12099
+    },
+    {
+      "id": 17393
+    }
+  ],
+  "battleFilter": {
+    "hidePlayers": false,
+    "hideMonsters": false,
+    "hideNPCs": false,
+    "hideSkulls": false,
+    "hideFriends": false
+  },
+  "autoTreino": {
+    "buffCd": 60,
+    "mana": 90,
+    "enabled": false,
+    "buffSpell": "Chakra Rest",
+    "spell": "power down",
+    "danceOn": false,
+    "danceMs": 500
+  },
+  "HealthPotion": {
+    "enabled": false,
+    "percent": 70,
+    "id": 23511
+  },
+  "jumpBackup": {
+    "974,912,7": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1508,1615,7": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1508,1614,6": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "961,861,7": {
+      "jumpTo": "Jump up",
+      "direction": 1
+    },
+    "949,908,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "1141,733,6": {
+      "jumpTo": "Jump Down",
+      "direction": 0
+    },
+    "1089,707,6": {
+      "jumpTo": "Jump Down",
+      "direction": 1
+    },
+    "968,915,7": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    },
+    "968,921,6": {
+      "jumpTo": "Jump Down",
+      "direction": 1
+    },
+    "968,911,6": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "1514,1607,7": {
+      "jumpTo": "Jump up",
+      "direction": 3
+    },
+    "976,870,7": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1506,1613,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "1134,734,7": {
+      "jumpTo": "Jump up",
+      "direction": 1
+    },
+    "1507,1614,6": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "1501,1614,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "974,868,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1508,1613,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "975,909,7": {
+      "jumpTo": "Jump up",
+      "direction": 3
+    },
+    "1506,1614,6": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "974,908,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1090,716,7": {
+      "jumpTo": "Jump up",
+      "direction": 3
+    },
+    "962,861,6": {
+      "jumpTo": "Jump Down",
+      "direction": 3
+    },
+    "946,909,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1194,877,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1507,1613,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "974,869,6": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "974,907,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "974,867,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "1507,1612,4": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "974,910,6": {
+      "jumpTo": "Jump Down",
+      "direction": 1
+    },
+    "118,985,6": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    }
+  },
+  "attackingPlayers": [
+
+  ],
+  "skipHoleIds": [
+
+  ],
+  "_icons": {
+    "shazamCave": {
+      "y": 0.25,
+      "x": 0.01
+    },
+    "shazamTarget": {
+      "y": 0.45,
+      "x": 0.01
+    },
+    "bugMapKunai": {
+      "y": 0.05,
+      "x": 0.01,
+      "enabled": false
+    }
+  },
+  "scriptsArea": "macro(500, \"Stamina\", function()\n    if stamina() < 2400 then\n        use(7439)\n    end\nend)\n",
+  "comboConfig": {
+    "spells": {
+      "Combo 5": [
+
+      ],
+      "Combo 4": [
+
+      ],
+      "Combo 3": [
+
+      ],
+      "Combo 1": [
+        {
+          "enabled": true,
+          "spellName": "lightning hound",
+          "index": 1
+        },
+        {
+          "enabled": true,
+          "spellName": "raiju hashiri no jutsu",
+          "index": 2
+        },
+        {
+          "enabled": true,
+          "spellName": "kamui",
+          "index": 3
+        },
+        {
+          "enabled": true,
+          "spellName": "doton suiryudan",
+          "index": 4
+        }
+      ],
+      "Combo 2": [
+        {
+          "enabled": true,
+          "spellName": "concentrate raikiri",
+          "index": 1
+        }
+      ]
+    },
+    "enabled": true,
+    "selected_type": "Combo 1"
+  },
+  "_configs": {
+    "CavebotConfigs": {
+      "selected": "Kimachi_Yagou",
+      "enabled": false
+    },
+    "cavebot_configs": {
+      "enabled": false,
+      "selected": "Black_Anbu,_tsuchi_no_Kuni"
+    },
+    "Target Configs": {
+      "selected": "default",
+      "enabled": true
+    },
+    "targetbot_configs": {
+      "enabled": true,
+      "selected": "all"
+    }
+  },
+  "task": [
+
+  ],
+  "kunaiKey": "F2",
+  "pillDelay": 0,
+  "ptSystem": {
+    "aceitar": false,
+    "invitar": false
+  },
+  "especiaisConfig": {
+    "spells": {
+      "Buffs": [
+        {
+          "type": "Buffs",
+          "spellTime": false,
+          "cooldownTotal": 60,
+          "spellName": "chakra rest",
+          "showMsg": "chakra rest",
+          "key": "AUTO",
+          "orangeMsg": "chakra rest",
+          "index": 1,
+          "activeTotal": 60,
+          "enabled": true,
+          "cooldownTime": 1791462251,
+          "activeTime": 1791462251
+        },
+        {
+          "spellTime": false,
+          "cooldownTotal": 60,
+          "spellName": "susanoo max",
+          "showMsg": "susanoo max",
+          "enabled": true,
+          "index": 2,
+          "type": "Buffs",
+          "orangeMsg": "susanoo max",
+          "key": "AUTO",
+          "activeTotal": 60
+        }
+      ]
+    },
+    "enabled": true,
+    "selected_type": "Buffs"
+  },
+  "playerList": {
+    "enemyList": [
+
+    ],
+    "groupMembers": false,
+    "friendList": [
+
+    ],
+    "blackList": [
+
+    ],
+    "marks": false
+  },
+  "especiaisTS": {
+    "stackMobIconEnabled": true,
+    "stackIconEnabled": true,
+    "selected_type": "Traps",
+    "spells": {
+      "Traps": [
+
+      ],
+      "Stack": [
+
+      ],
+      "Retas": [
+
+      ],
+      "Outros": [
+
+      ]
+    },
+    "stackMobIconPos": {
+      "y": 80,
+      "x": 200
+    },
+    "enabled": false,
+    "stackIconPos": {
+      "y": 50,
+      "x": 200
+    }
+  },
+  "stairsIds": [
+    {
+      "id": 1666
+    },
+    {
+      "id": 6207
+    },
+    {
+      "id": 1948
+    },
+    {
+      "id": 435
+    },
+    {
+      "id": 7771
+    },
+    {
+      "id": 5542
+    },
+    {
+      "id": 8657
+    },
+    {
+      "id": 6264
+    },
+    {
+      "id": 1646
+    },
+    {
+      "id": 1648
+    },
+    {
+      "id": 1678
+    },
+    {
+      "id": 5291
+    },
+    {
+      "id": 1680
+    },
+    {
+      "id": 6905
+    },
+    {
+      "id": 6262
+    },
+    {
+      "id": 1664
+    },
+    {
+      "id": 13296
+    },
+    {
+      "id": 1067
+    },
+    {
+      "id": 13861
+    },
+    {
+      "id": 11931
+    },
+    {
+      "id": 1949
+    },
+    {
+      "id": 6896
+    },
+    {
+      "id": 6205
+    },
+    {
+      "id": 13926
+    },
+    {
+      "id": 1947
+    },
+    {
+      "id": 12097
+    },
+    {
+      "id": 615
+    },
+    {
+      "id": 1678
+    },
+    {
+      "id": 8367
+    }
+  ],
+  "buyAol": false,
+  "senseNames": [
+
+  ]
+}

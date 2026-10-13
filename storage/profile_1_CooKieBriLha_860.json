@@ -1,0 +1,552 @@
+{
+  "bijuuOutfit": 0,
+  "bijuuBuff": "bijuu yaiba",
+  "buyAol": false,
+  "hasteSpell": "Concentrate Chakra Feet",
+  "fugaSettings": {
+    "infoPos": {
+      "y": 238,
+      "x": 772
+    },
+    "isOn": false,
+    "showInfo": true
+  },
+  "scrollBars": {
+    "distanceKunai": 10,
+    "regenPercent": 100,
+    "macroDelay": 200
+  },
+  "regenSpell": "Big Regeneration",
+  "battleTracking": [
+    0,
+    268435500,
+    [
+
+    ]
+  ],
+  "bijuuRegen": "bijuu regeneration",
+  "attackEnemy": {
+    "macroActive": false,
+    "friendList": [
+
+    ]
+  },
+  "autoKaiConfig": {
+    "myRemoveSpell": "Kai",
+    "macroActive": true
+  },
+  "checkBoxs": {
+    "battleFilter": false,
+    "autoRegen": true,
+    "antiLyze": true,
+    "markAttacking": false,
+    "autoHaste": true,
+    "useKunai": false,
+    "useBijuu": false,
+    "usePill": false
+  },
+  "TravelSystem": {
+    "minoru": {
+      "index": 1
+    },
+    "gate keaper": {
+      "index": 2
+    }
+  },
+  "jumps": {
+    "hotkey": "f",
+    "enabled": false,
+    "savePositions": true
+  },
+  "kunaiId": 7382,
+  "rtsFollow": "Name",
+  "config": {
+    "followTarget": {
+      "activatedIcon": false,
+      "iconId": 51,
+      "actionKey": "Tab"
+    },
+    "potion": {
+      "iconId": 32,
+      "activatedIcon": false
+    },
+    "enemy": {
+      "iconId": 67,
+      "activatedIcon": false
+    },
+    "buffs": {
+      "iconId": 83,
+      "activatedIcon": false
+    },
+    "jump": {
+      "iconId": 75,
+      "activatedIcon": false
+    },
+    "bugMap": {
+      "activatedIcon": false,
+      "iconId": 30,
+      "extra": {
+        "Left": "A",
+        "Right": "D",
+        "Up": "W",
+        "Down": "S"
+      }
+    },
+    "especiais": {
+      "iconId": 100,
+      "activatedIcon": false
+    },
+    "sense": {
+      "activatedIcon": false,
+      "iconId": 71,
+      "extra": {
+        "senseTarget": "T",
+        "senseLast": "V"
+      }
+    },
+    "antiTrap": {
+      "iconId": 84,
+      "activatedIcon": false
+    },
+    "autoEscadas": {
+      "iconId": 23,
+      "activatedIcon": false
+    },
+    "attackTarget": {
+      "iconId": 21,
+      "activatedIcon": false
+    },
+    "fugas": {
+      "iconId": 99,
+      "activatedIcon": false
+    },
+    "combo": {
+      "activatedIcon": false,
+      "iconId": 65
+    }
+  },
+  "fugaSpells": [
+
+  ],
+  "widgetPos": {
+    "pkTimeWidget": {
+      "y": 196,
+      "x": 861
+    }
+  },
+  "ptSystem": {
+    "aceitar": false,
+    "invitar": false
+  },
+  "caveBotTasker": {
+    "max": 0,
+    "monster": "",
+    "inProgress": false,
+    "monster2": "",
+    "taskName": "",
+    "count": 0
+  },
+  "extras": {
+    "huntRoutes": 50,
+    "talkDelay": 200,
+    "killUnder": 30,
+    "lootDelay": 200,
+    "gotoMaxDistance": 40,
+    "looting": 40
+  },
+  "_macros": {
+    "": false,
+    "Follow Player": false,
+    "Sense": false,
+    "Attack Target": false,
+    "Follow RTS": true,
+    "Follow Target": false,
+    "Bug Map": false
+  },
+  "FollowPlayerName": "Nome do player",
+  "sealedTypes": [
+
+  ],
+  "pillId": 11821,
+  "pillContent": "Nhack Nhack",
+  "caveBot": [
+
+  ],
+  "stairsIds": [
+    {
+      "id": 1666
+    },
+    {
+      "id": 6207
+    },
+    {
+      "id": 1948
+    },
+    {
+      "id": 435
+    },
+    {
+      "id": 7771
+    },
+    {
+      "id": 5542
+    },
+    {
+      "id": 8657
+    },
+    {
+      "id": 6264
+    },
+    {
+      "id": 1646
+    },
+    {
+      "id": 1648
+    },
+    {
+      "id": 1678
+    },
+    {
+      "id": 5291
+    },
+    {
+      "id": 1680
+    },
+    {
+      "id": 6905
+    },
+    {
+      "id": 6262
+    },
+    {
+      "id": 1664
+    },
+    {
+      "id": 13296
+    },
+    {
+      "id": 1067
+    },
+    {
+      "id": 13861
+    },
+    {
+      "id": 11931
+    },
+    {
+      "id": 1949
+    },
+    {
+      "id": 6896
+    },
+    {
+      "id": 6205
+    },
+    {
+      "id": 13926
+    },
+    {
+      "id": 1947
+    },
+    {
+      "id": 12097
+    },
+    {
+      "id": 615
+    },
+    {
+      "id": 1678
+    },
+    {
+      "id": 8367
+    }
+  ],
+  "battleFilter": {
+    "hidePlayers": false,
+    "hideMonsters": false,
+    "hideNPCs": false,
+    "hideSkulls": false,
+    "hideFriends": false
+  },
+  "excludeIds": [
+    {
+      "id": 12099
+    },
+    {
+      "id": 17393
+    }
+  ],
+  "HealthPotion": {
+    "enabled": false,
+    "percent": 70,
+    "id": 23511
+  },
+  "jumpBackup": {
+    "974,912,7": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1508,1615,7": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1508,1614,6": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "961,861,7": {
+      "jumpTo": "Jump up",
+      "direction": 1
+    },
+    "949,908,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "1141,733,6": {
+      "jumpTo": "Jump Down",
+      "direction": 0
+    },
+    "1089,707,6": {
+      "jumpTo": "Jump Down",
+      "direction": 1
+    },
+    "968,915,7": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    },
+    "968,921,6": {
+      "jumpTo": "Jump Down",
+      "direction": 1
+    },
+    "968,911,6": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "1514,1607,7": {
+      "jumpTo": "Jump up",
+      "direction": 3
+    },
+    "976,870,7": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1506,1613,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "1134,734,7": {
+      "jumpTo": "Jump up",
+      "direction": 1
+    },
+    "1507,1614,6": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "1501,1614,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "974,868,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1508,1613,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "975,909,7": {
+      "jumpTo": "Jump up",
+      "direction": 3
+    },
+    "1506,1614,6": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "974,908,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1090,716,7": {
+      "jumpTo": "Jump up",
+      "direction": 3
+    },
+    "962,861,6": {
+      "jumpTo": "Jump Down",
+      "direction": 3
+    },
+    "946,909,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1194,877,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "1507,1613,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "974,869,6": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "974,907,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "974,867,5": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "1507,1612,4": {
+      "jumpTo": "Jump Down",
+      "direction": 2
+    },
+    "974,910,6": {
+      "jumpTo": "Jump Down",
+      "direction": 1
+    },
+    "118,985,6": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    }
+  },
+  "attackingPlayers": [
+
+  ],
+  "skipHoleIds": [
+
+  ],
+  "PotionsSystem": {
+    "enabled": false
+  },
+  "_icons": {
+    "shazamCave": {
+      "y": 0.25,
+      "x": 0.01
+    },
+    "shazamTarget": {
+      "y": 0.45,
+      "x": 0.01
+    },
+    "bugMapKunai": {
+      "y": 0.05,
+      "x": 0.01,
+      "enabled": false
+    }
+  },
+  "comboConfig": {
+    "spells": {
+      "Combo 5": [
+
+      ],
+      "Combo 4": [
+
+      ],
+      "Combo 3": [
+
+      ],
+      "Combo 1": [
+
+      ],
+      "Combo 2": [
+
+      ]
+    },
+    "enabled": false,
+    "selected_type": "Combo 1"
+  },
+  "_configs": {
+    "Target Configs": {
+      "enabled": true,
+      "selected": "default"
+    },
+    "cavebot_configs": {
+      "selected": "Beezer",
+      "enabled": false
+    },
+    "CavebotConfigs": {
+      "enabled": true
+    },
+    "targetbot_configs": {
+      "selected": "Trainer",
+      "enabled": true
+    }
+  },
+  "autoTreino": {
+    "mana": 90,
+    "buffSpell": "Chakra rest",
+    "danceOn": true,
+    "buffCd": 60,
+    "chakraRestCd": 62,
+    "chakraRest": "Chakra rest",
+    "enabled": true,
+    "danceMs": 500,
+    "spell": "Powerdown"
+  },
+  "kunaiKey": "F2",
+  "pillDelay": 0,
+  "ChakraPotion": {
+    "enabled": false,
+    "percent": 70,
+    "id": 23510
+  },
+  "especiaisConfig": {
+    "spells": {
+      "Buffs": [
+
+      ]
+    },
+    "enabled": false,
+    "selected_type": "Buffs"
+  },
+  "playerList": {
+    "enemyList": [
+
+    ],
+    "friendList": [
+
+    ],
+    "marks": false,
+    "blackList": [
+
+    ],
+    "groupMembers": false
+  },
+  "especiaisTS": {
+    "stackMobIconEnabled": false,
+    "stackIconEnabled": false,
+    "selected_type": "Traps",
+    "spells": {
+      "Traps": [
+
+      ],
+      "Stack": [
+
+      ],
+      "Retas": [
+
+      ],
+      "Outros": [
+
+      ]
+    },
+    "stackMobIconPos": {
+      "y": 657,
+      "x": 1493
+    },
+    "enabled": false,
+    "stackIconPos": {
+      "y": 638,
+      "x": 1502
+    }
+  },
+  "_sense_spell": "Sense",
+  "stairsConfig": {
+    "actionKey": "Space",
+    "enabled": false
+  },
+  "senseNames": [
+
+  ]
+}

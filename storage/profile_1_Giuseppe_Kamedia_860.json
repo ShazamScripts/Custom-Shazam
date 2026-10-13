@@ -1,0 +1,727 @@
+{
+  "fugaSpells": [
+    {
+      "selfHealth": 40,
+      "enableTimeSpell": true,
+      "keyPress": "AUTO",
+      "orangeSpell": "suna defense",
+      "spellCast": "suna defense",
+      "rawCooldownActive": 2,
+      "widgetPos": {
+        "y": 198,
+        "x": 469
+      },
+      "onScreen": "suna defense",
+      "index": 1,
+      "rawCooldownTotal": 2,
+      "enabled": true,
+      "cooldownTime": 1791555576,
+      "activeTime": 1791555576
+    }
+  ],
+  "bijuuBuff": "bijuu yaiba",
+  "buyAol": false,
+  "pillContent": "Nhack Nhack",
+  "fugaSettings": {
+    "infoPos": {
+      "y": 192,
+      "x": 650
+    },
+    "isOn": true,
+    "showInfo": true
+  },
+  "scrollBars": {
+    "regenPercent": 100,
+    "distanceKunai": 10,
+    "macroDelay": 200
+  },
+  "regenSpell": "Big Regeneration",
+  "battleTracking": [
+    0,
+    268435835,
+    [
+
+    ]
+  ],
+  "bijuuRegen": "bijuu regeneration",
+  "attackEnemy": {
+    "macroActive": false,
+    "friendList": [
+
+    ]
+  },
+  "checkBoxs": {
+    "autoHaste": true,
+    "autoRegen": true,
+    "antiLyze": true,
+    "markAttacking": false,
+    "battleFilter": true,
+    "useKunai": false,
+    "useBijuu": false,
+    "usePill": false
+  },
+  "TravelSystem": {
+    "minoru": {
+      "cities": [
+        "An No Kuni",
+        "Benisu Island",
+        "City Events",
+        "Ggn City",
+        "Hiraku Island",
+        "Hoshigakure Island",
+        "Ilha Mokuzu",
+        "Iwagakure",
+        "Kaminari No Kuni",
+        "Konoha",
+        "Kumogakure",
+        "Kushiro Island",
+        "Monte Myoboku",
+        "Nami No Kuni",
+        "Otogakure No Sato",
+        "Sand Florest",
+        "Sunagakure",
+        "Takigakure No Sato",
+        "Thsuki Island",
+        "Tsuchi No Kuni",
+        "Umi No Kuni",
+        "Vale Do Fim",
+        "Yami No Kuni",
+        "Yu No Kuni",
+        "Yuki No Kuni"
+      ],
+      "index": 1,
+      "talkActions": [
+        "hi",
+        "travel"
+      ]
+    },
+    "active": true,
+    "gate keaper": {
+      "index": 2
+    }
+  },
+  "jumps": {
+    "hotkey": "f",
+    "enabled": false,
+    "savePositions": true
+  },
+  "kunaiId": 7382,
+  "rtsFollow": "Name",
+  "config": {
+    "followTarget": {
+      "activatedIcon": false,
+      "actionKey": "Tab",
+      "iconId": 69
+    },
+    "potion": {
+      "activatedIcon": false,
+      "iconId": 36
+    },
+    "enemy": {
+      "activatedIcon": false,
+      "iconId": 48
+    },
+    "buffs": {
+      "activatedIcon": false,
+      "iconId": 58
+    },
+    "combo": {
+      "activatedIcon": false,
+      "iconId": 19
+    },
+    "bugMap": {
+      "activatedIcon": false,
+      "extra": {
+        "Left": "A",
+        "Right": "D",
+        "Up": "W",
+        "Down": "S"
+      },
+      "iconId": 41
+    },
+    "especiais": {
+      "activatedIcon": false,
+      "iconId": 82
+    },
+    "sense": {
+      "activatedIcon": false,
+      "extra": {
+        "senseTarget": "T",
+        "senseLast": "V"
+      },
+      "iconId": 35
+    },
+    "antiTrap": {
+      "activatedIcon": false,
+      "iconId": 95
+    },
+    "fugas": {
+      "activatedIcon": false,
+      "iconId": 21
+    },
+    "attackTarget": {
+      "activatedIcon": false,
+      "iconId": 7
+    },
+    "autoEscadas": {
+      "activatedIcon": false,
+      "iconId": 94
+    },
+    "jump": {
+      "activatedIcon": false,
+      "iconId": 44
+    }
+  },
+  "autoKaiConfig": {
+    "myRemoveSpell": "Kai",
+    "macroActive": false
+  },
+  "widgetPos": {
+    "pkTimeWidget": {
+      "y": 171,
+      "x": 681
+    }
+  },
+  "bijuuOutfit": 0,
+  "hasteSpell": "Concentrate Chakra Feet",
+  "extras": {
+    "huntRoutes": 50,
+    "talkDelay": 200,
+    "killUnder": 30,
+    "lootDelay": 200,
+    "gotoMaxDistance": 40,
+    "looting": 40
+  },
+  "_macros": {
+    "": false,
+    "Sense": false,
+    "Attack Target": true,
+    "Follow Target": true,
+    "Bug Map": true
+  },
+  "_sense_spell": "Sense",
+  "sealedTypes": [
+
+  ],
+  "pillId": 11821,
+  "stairsConfig": {
+    "enabled": true,
+    "actionKey": "Space"
+  },
+  "caveBot": [
+
+  ],
+  "_configs": {
+    "Target Configs": {
+      "enabled": true
+    },
+    "cavebot_configs": {
+      "enabled": false,
+      "selected": "Beezer"
+    },
+    "CavebotConfigs": {
+      "enabled": false
+    },
+    "targetbot_configs": {
+      "enabled": true,
+      "selected": "Trainer"
+    }
+  },
+  "battleFilter": {
+    "hidePlayers": false,
+    "hideSkulls": false,
+    "hideNPCs": false,
+    "hideMonsters": false,
+    "hideFriends": false
+  },
+  "pillDelay": 0,
+  "HealthPotion": {
+    "percent": 70,
+    "enabled": true,
+    "id": 946
+  },
+  "jumpBackup": {
+    "569,1507,3": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    },
+    "1004,907,5": {
+      "jumpTo": "Jump Down",
+      "direction": 3
+    },
+    "962,863,6": {
+      "jumpTo": "Jump down",
+      "direction": 3
+    },
+    "973,856,6": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    },
+    "977,857,5": {
+      "jumpTo": "Jump down",
+      "direction": 0
+    },
+    "965,869,6": {
+      "jumpTo": "Jump down",
+      "direction": 2
+    },
+    "990,918,7": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    },
+    "977,854,7": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    },
+    "965,867,6": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "986,881,7": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "961,859,7": {
+      "jumpTo": "Jump up",
+      "direction": 1
+    },
+    "524,1527,4": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    },
+    "968,870,7": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    },
+    "980,849,7": {
+      "jumpTo": "Jump up",
+      "direction": 3
+    },
+    "966,869,6": {
+      "jumpTo": "Jump down",
+      "direction": 2
+    },
+    "978,855,6": {
+      "jumpTo": "Jump down",
+      "direction": 1
+    },
+    "979,850,6": {
+      "jumpTo": "Jump Down",
+      "direction": 1
+    },
+    "979,867,7": {
+      "jumpTo": "Jump up",
+      "direction": 3
+    },
+    "972,853,7": {
+      "jumpTo": "Jump up",
+      "direction": 3
+    },
+    "966,867,5": {
+      "jumpTo": "Jump down",
+      "direction": 2
+    },
+    "974,855,6": {
+      "jumpTo": "Jump down",
+      "direction": 0
+    },
+    "972,854,7": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    },
+    "995,922,7": {
+      "jumpTo": "Jump up",
+      "direction": 3
+    },
+    "994,922,6": {
+      "jumpTo": "Jump Down",
+      "direction": 1
+    },
+    "962,861,6": {
+      "jumpTo": "Jump down",
+      "direction": 3
+    },
+    "967,854,6": {
+      "jumpTo": "Jump up",
+      "direction": 1
+    },
+    "974,857,5": {
+      "jumpTo": "Jump down",
+      "direction": 0
+    },
+    "976,854,7": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    },
+    "971,854,5": {
+      "jumpTo": "Jump up",
+      "direction": 2
+    },
+    "979,849,6": {
+      "jumpTo": "Jump Down",
+      "direction": 1
+    },
+    "968,869,6": {
+      "jumpTo": "Jump down",
+      "direction": 2
+    },
+    "978,867,6": {
+      "jumpTo": "Jump down",
+      "direction": 1
+    },
+    "977,855,6": {
+      "jumpTo": "Jump down",
+      "direction": 0
+    },
+    "1003,904,6": {
+      "jumpTo": "Jump up",
+      "direction": 1
+    },
+    "994,919,6": {
+      "jumpTo": "Jump Down",
+      "direction": 1
+    },
+    "977,858,4": {
+      "jumpTo": "Jump down",
+      "direction": 0
+    },
+    "961,865,7": {
+      "jumpTo": "Jump up",
+      "direction": 1
+    },
+    "964,869,6": {
+      "jumpTo": "Jump down",
+      "direction": 2
+    },
+    "983,877,6": {
+      "jumpTo": "Jump Down",
+      "direction": 3
+    },
+    "974,870,7": {
+      "jumpTo": "Jump up",
+      "direction": 0
+    }
+  },
+  "_icons": {
+    "bugMapKunai": {
+      "y": 0.05,
+      "x": 0.01,
+      "enabled": false
+    },
+    "shazamTarget": {
+      "y": 0.45,
+      "x": 0.01
+    },
+    "shazamCave": {
+      "y": 0.25,
+      "x": 0.01
+    }
+  },
+  "skipHoleIds": [
+
+  ],
+  "attackingPlayers": [
+
+  ],
+  "autoTreino": {
+    "buffCd": 62,
+    "mana": 90,
+    "danceMs": 500,
+    "buffSpell": "chakra rest",
+    "spell": "powerdown",
+    "danceOn": true,
+    "enabled": false
+  },
+  "comboConfig": {
+    "fist_cooldown": 1050,
+    "spells": {
+      "Combo 1": [
+        {
+          "exhaust": 0,
+          "cooldownTotal": 2000,
+          "casted": 8,
+          "until_hit": 0,
+          "orangeMsg": "gokusamaisou",
+          "spellName": "gokusamaisou",
+          "index": 1,
+          "damage": 48210,
+          "enabled": true,
+          "cooldownTime": 2657.471,
+          "projectiles": 4
+        },
+        {
+          "exhaust": 0,
+          "cooldownTotal": 1000,
+          "casted": 16,
+          "until_hit": 0,
+          "orangeMsg": "sabaku hando",
+          "spellName": "sabaku hando",
+          "index": 2,
+          "damage": 47520,
+          "enabled": true,
+          "cooldownTime": 2656.486,
+          "projectiles": 1
+        },
+        {
+          "exhaust": 0,
+          "cooldownTotal": 1000,
+          "casted": 16,
+          "until_hit": 0,
+          "orangeMsg": "sabaku rou",
+          "spellName": "sabaku rou",
+          "index": 3,
+          "damage": 36400,
+          "enabled": true,
+          "cooldownTime": 2657.552,
+          "projectiles": 1
+        },
+        {
+          "exhaust": 0,
+          "cooldownTotal": 2000,
+          "casted": 8,
+          "until_hit": 0,
+          "orangeMsg": "sabaku sotaiso",
+          "spellName": "sabaku sotaiso",
+          "index": 4,
+          "damage": 65395,
+          "enabled": true,
+          "cooldownTime": 2657.506,
+          "projectiles": 1
+        },
+        {
+          "cooldownTotal": 3000,
+          "exhaust": 0,
+          "spellName": "suna no yoroi",
+          "until_hit": 0,
+          "orangeMsg": "suna no yoroi",
+          "casted": 6,
+          "index": 5,
+          "damage": 1,
+          "enabled": true,
+          "cooldownTime": 2658.514,
+          "projectiles": 2
+        }
+      ],
+      "Combo 4": [
+
+      ],
+      "Combo 3": [
+
+      ],
+      "Combo 5": [
+
+      ],
+      "Combo 2": [
+        {
+          "enabled": true,
+          "spellName": "suna shigure",
+          "index": 1
+        }
+      ]
+    },
+    "fist_dmg": {
+      "min": 172,
+      "max": 345
+    },
+    "enabled": true,
+    "selected_type": "Combo 1"
+  },
+  "caveBotTasker": {
+    "max": 0,
+    "monster": "",
+    "inProgress": false,
+    "monster2": "",
+    "taskName": "",
+    "count": 0
+  },
+  "PotionsSystem": {
+    "enabled": false
+  },
+  "kunaiKey": "F2",
+  "excludeIds": [
+    {
+      "id": 12099
+    },
+    {
+      "id": 17393
+    }
+  ],
+  "ChakraPotion": {
+    "percent": 70,
+    "enabled": false,
+    "id": 23510
+  },
+  "especiaisConfig": {
+    "enabled": true,
+    "spells": {
+      "Buffs": [
+        {
+          "activeTotal": 60,
+          "spellTime": false,
+          "cooldownTotal": 60,
+          "spellName": "suna no tate",
+          "showMsg": "suna no tate",
+          "cooldownTime": 1791556819,
+          "enabled": true,
+          "index": 1,
+          "type": "Buffs",
+          "orangeMsg": "suna no tate",
+          "key": "AUTO",
+          "activeTime": 1791556819
+        },
+        {
+          "activeTotal": 60,
+          "spellTime": false,
+          "cooldownTotal": 60,
+          "spellName": "chakra rest",
+          "showMsg": "chakra rest",
+          "cooldownTime": 1791556819,
+          "enabled": true,
+          "index": 2,
+          "type": "Buffs",
+          "orangeMsg": "chakra rest",
+          "key": "AUTO",
+          "activeTime": 1791556819
+        }
+      ]
+    },
+    "selected_type": "Buffs"
+  },
+  "playerList": {
+    "enemyList": [
+
+    ],
+    "groupMembers": false,
+    "marks": false,
+    "blackList": [
+
+    ],
+    "friendList": [
+
+    ]
+  },
+  "especiaisTS": {
+    "stackMobIconEnabled": false,
+    "stackIconEnabled": false,
+    "stackIconPos": {
+      "y": 516,
+      "x": 1039
+    },
+    "stackMobIconPos": {
+      "y": 536,
+      "x": 1027
+    },
+    "enabled": true,
+    "spells": {
+      "Outros": [
+
+      ],
+      "Retas": [
+
+      ],
+      "Stack": [
+
+      ],
+      "Traps": [
+
+      ]
+    },
+    "selected_type": "Stack"
+  },
+  "stairsIds": [
+    {
+      "id": 1666
+    },
+    {
+      "id": 6207
+    },
+    {
+      "id": 1948
+    },
+    {
+      "id": 435
+    },
+    {
+      "id": 7771
+    },
+    {
+      "id": 5542
+    },
+    {
+      "id": 8657
+    },
+    {
+      "id": 6264
+    },
+    {
+      "id": 1646
+    },
+    {
+      "id": 1648
+    },
+    {
+      "id": 1678
+    },
+    {
+      "id": 5291
+    },
+    {
+      "id": 1680
+    },
+    {
+      "id": 6905
+    },
+    {
+      "id": 6262
+    },
+    {
+      "id": 1664
+    },
+    {
+      "id": 13296
+    },
+    {
+      "id": 1067
+    },
+    {
+      "id": 13861
+    },
+    {
+      "id": 11931
+    },
+    {
+      "id": 1949
+    },
+    {
+      "id": 6896
+    },
+    {
+      "id": 6205
+    },
+    {
+      "id": 13926
+    },
+    {
+      "id": 1947
+    },
+    {
+      "id": 12097
+    },
+    {
+      "id": 615
+    },
+    {
+      "id": 1678
+    },
+    {
+      "id": 8367
+    }
+  ],
+  "ptSystem": {
+    "aceitar": false,
+    "invitar": false
+  },
+  "senseNames": {
+    "targetName": "Hyundai"
+  }
+}

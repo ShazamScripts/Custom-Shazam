@@ -1,0 +1,709 @@
+{
+  "bijuuOutfit": 0,
+  "bijuuBuff": "bijuu yaiba",
+  "buyAol": true,
+  "autoSummon": {
+    "mensagem": "",
+    "jutsu": "",
+    "summon": ""
+  },
+  "PotionsSystem": {
+    "enabled": false
+  },
+  "sealedTypes": [
+
+  ],
+  "hasteSpell": "",
+  "autoKaiConfig": {
+    "myRemoveSpell": "Kai",
+    "requestKai": false,
+    "macroActive": false,
+    "kaiExhaust": 1791924179
+  },
+  "stairsConfig": {
+    "enabled": true,
+    "actionKey": "Space"
+  },
+  "fugaSettings": {
+    "infoPos": {
+      "y": 219,
+      "x": 841
+    },
+    "isOn": true,
+    "showInfo": true
+  },
+  "stairsIds": [
+    {
+      "id": 1666,
+      "count": 0
+    },
+    {
+      "id": 6207,
+      "count": 0
+    },
+    {
+      "id": 1948,
+      "count": 0
+    },
+    {
+      "id": 435,
+      "count": 0
+    },
+    {
+      "id": 7771,
+      "count": 0
+    },
+    {
+      "id": 5542,
+      "count": 0
+    },
+    {
+      "id": 8657,
+      "count": 0
+    },
+    {
+      "id": 6264,
+      "count": 0
+    },
+    {
+      "id": 1646,
+      "count": 0
+    },
+    {
+      "id": 1648,
+      "count": 0
+    },
+    {
+      "id": 1678,
+      "count": 0
+    },
+    {
+      "id": 5291,
+      "count": 0
+    },
+    {
+      "id": 1680,
+      "count": 0
+    },
+    {
+      "id": 6905,
+      "count": 0
+    },
+    {
+      "id": 6262,
+      "count": 0
+    },
+    {
+      "id": 1664,
+      "count": 0
+    },
+    {
+      "id": 13296,
+      "count": 0
+    },
+    {
+      "id": 1067,
+      "count": 0
+    },
+    {
+      "id": 11931,
+      "count": 0
+    },
+    {
+      "id": 1949,
+      "count": 0
+    },
+    {
+      "id": 6896,
+      "count": 0
+    },
+    {
+      "id": 6205,
+      "count": 0
+    },
+    {
+      "id": 1947,
+      "count": 0
+    },
+    {
+      "id": 12097,
+      "count": 0
+    },
+    {
+      "id": 615,
+      "count": 0
+    },
+    {
+      "id": 8367,
+      "count": 0
+    },
+    {
+      "id": 5102,
+      "count": 1
+    }
+  ],
+  "regenSpell": "Big Regeneration",
+  "battleTracking": [
+    1791925045,
+    268439390,
+    [
+
+    ]
+  ],
+  "pillId": 11821,
+  "bijuuRegen": "bijuu regeneration",
+  "attackEnemy": {
+    "macroActive": false,
+    "friendList": [
+      "Aacabouaivitim",
+      "Michelle Bolsonaro",
+      "Jakiew",
+      "Papaleguas"
+    ]
+  },
+  "pillContent": "Nhack Nhack",
+  "scrollBars": {
+    "regenPercent": 100,
+    "distanceKunai": 10,
+    "macroDelay": 100
+  },
+  "checkBoxs": {
+    "autoHaste": false,
+    "autoRegen": true,
+    "antiLyze": false,
+    "markAttacking": false,
+    "battleFilter": true,
+    "useKunai": false,
+    "useBijuu": false,
+    "usePill": false
+  },
+  "TravelSystem": {
+    "mabui": {
+      "cities": [
+        "Amazon Forest",
+        "Amegakure",
+        "Benisu Island",
+        "Biju Island",
+        "Dark Forest",
+        "Ggn",
+        "Hoshigakure",
+        "Ilhazinha",
+        "Ilhota",
+        "Kazanjima Island",
+        "Konohagakure",
+        "Kumogakure",
+        "Monte Myoboku",
+        "South Florest",
+        "South Island",
+        "Suna Camp",
+        "Sunagakure",
+        "Valley Of The End",
+        "Vila Takumi",
+        "Vilarejo",
+        "Yukigakure"
+      ],
+      "index": 1,
+      "talkActions": [
+        "hi"
+      ]
+    },
+    "active": true
+  },
+  "jumps": {
+    "hotkey": "f",
+    "enabled": true,
+    "savePositions": true
+  },
+  "kunaiId": 7382,
+  "rtsFollow": "Nome do player",
+  "config": {
+    "followTarget": {
+      "activatedIcon": false,
+      "actionKey": "Tab",
+      "iconId": 68
+    },
+    "potion": {
+      "activatedIcon": false,
+      "iconId": 96
+    },
+    "enemy": {
+      "activatedIcon": false,
+      "iconId": 8
+    },
+    "buffs": {
+      "activatedIcon": false,
+      "iconId": 23
+    },
+    "combo": {
+      "activatedIcon": false,
+      "iconId": 99
+    },
+    "bugMap": {
+      "activatedIcon": false,
+      "extra": {
+        "Left": "A",
+        "Right": "D",
+        "Up": "W",
+        "Down": "S"
+      },
+      "iconId": 46
+    },
+    "especiais": {
+      "activatedIcon": false,
+      "iconId": 14
+    },
+    "sense": {
+      "activatedIcon": false,
+      "extra": {
+        "senseTarget": "T",
+        "senseLast": "V"
+      },
+      "iconId": 96
+    },
+    "antiTrap": {
+      "activatedIcon": false,
+      "iconId": 33
+    },
+    "fugas": {
+      "activatedIcon": false,
+      "iconId": 63
+    },
+    "attackTarget": {
+      "activatedIcon": false,
+      "iconId": 50
+    },
+    "autoEscadas": {
+      "activatedIcon": false,
+      "iconId": 42
+    },
+    "jump": {
+      "activatedIcon": false,
+      "iconId": 18
+    }
+  },
+  "caveBotTasker": {
+    "max": 0,
+    "monster": "",
+    "inProgress": false,
+    "monster2": "",
+    "taskName": "",
+    "count": 0
+  },
+  "widgetPos": {
+    "pkTimeWidget": {
+      "y": 197,
+      "x": 878
+    }
+  },
+  "ptSystem": {
+    "aceitar": false,
+    "invitar": false
+  },
+  "pillDelay": 0,
+  "extras": {
+    "huntRoutes": 50,
+    "lootDelay": 200,
+    "killUnder": 30,
+    "looting": 40,
+    "gotoMaxDistance": 40,
+    "talkDelay": 200
+  },
+  "_macros": {
+    "": true,
+    "Auto Jam": false,
+    "Exp Pot": false,
+    "Follow Target": true,
+    "Auto Summon": false,
+    "Bug Map": true,
+    "Detectar Loot Pouch": true,
+    "Recuperar Stamina": true,
+    "Sense": true,
+    "Attack Target": true,
+    "Auto Loot Pouch 500": true,
+    "Auto Retirar Loot 500": false,
+    "Detectar Pouch": false
+  },
+  "expPotBarPosition": [
+
+  ],
+  "_sense_spell": "Sense",
+  "_icons": {
+    "bugMapKunai": {
+      "y": 0.05,
+      "x": 0.01,
+      "enabled": false
+    },
+    "shazamTarget": {
+      "y": 0.32039800995025,
+      "x": 0.67980561555076
+    },
+    "shazamCave": {
+      "y": 0.31940298507463,
+      "x": 0.65172786177106
+    }
+  },
+  "expPot": {
+    "durationMinutes": 60,
+    "retrySeconds": 60,
+    "itemId": 11186,
+    "enabled": false,
+    "endsAt": 1791852799,
+    "lastAttempt": 1791849199
+  },
+  "caveBot": [
+
+  ],
+  "shazamTargetIgnore": "Katsuyu\nSand Guardian\nKarasu\nKame\nJakiew\nManda\n",
+  "battleFilter": {
+    "hidePlayers": false,
+    "hideSkulls": false,
+    "hideNPCs": false,
+    "hideMonsters": false,
+    "hideFriends": true
+  },
+  "rtsLadderIds": "",
+  "HealthPotion": {
+    "percent": 70,
+    "enabled": false,
+    "id": 23511
+  },
+  "autoTreino": {
+    "buffCd": 60,
+    "mana": 90,
+    "danceMs": 500,
+    "buffSpell": "Chakra Rest",
+    "spell": "power down",
+    "danceOn": false,
+    "enabled": false
+  },
+  "attackingPlayers": [
+
+  ],
+  "skipHoleIds": [
+
+  ],
+  "_configs": {
+    "CavebotConfigs": {
+      "enabled": false,
+      "selected": "Elite_Samurai"
+    },
+    "cavebot_configs": {
+      "enabled": false,
+      "selected": "Beezer"
+    },
+    "Target Configs": {
+      "enabled": false,
+      "selected": "All"
+    },
+    "targetbot_configs": {
+      "enabled": true
+    }
+  },
+  "scriptsArea": "macro(1000, \"Recuperar Stamina\", function()\n  if player:getStamina() <= 41 * 60 then\n    useWith(11791, player)\n  end\nend)\n\n-- EXP POT / PAPEL XP - OTCv8\n-- Use no proprio personagem e cooldown persistente.\n\nstorage.expPot = storage.expPot or {}\nlocal cfg = storage.expPot\ncfg.endsAt = tonumber(cfg.endsAt) or 0\ncfg.lastAttempt = tonumber(cfg.lastAttempt) or 0\ncfg.itemId = tonumber(cfg.itemId) or 14481\ncfg.durationMinutes = tonumber(cfg.durationMinutes) or 60\ncfg.retrySeconds = tonumber(cfg.retrySeconds) or 60\nstorage.expPotBarPosition = storage.expPotBarPosition or {}\n\nlocal function clock()\n  return os.time()\nend\nlocal function persist()\n  if type(saveConfig) == 'function' then saveConfig() end\nend\nlocal function left()\n  return math.max(0, cfg.endsAt - clock())\nend\nlocal function formatTime(t)\n  return string.format('%02d:%02d:%02d', math.floor(t / 3600), math.floor((t % 3600) / 60), t % 60)\nend\n\nlocal xpUI = setupUI([[\nPanel\n  id: expPotPanel\n  image-border: 8\n  anchors.horizontalCenter: parent.horizontalCenter\n  anchors.top: parent.top\n  height: 20\n  width: 140\n  margin-top: 300\n  visible: false\n  focusable: true\n  draggable: true\n\n  Label\n    id: expPotLabel\n    anchors.fill: parent\n    text-align: center\n    font: verdana-11px-rounded\n    color: #ffcc00\n]], modules.game_interface.gameMapPanel)\n\nlocal savedPos = storage.expPotBarPosition\nif type(savedPos.x) == 'number' and type(savedPos.y) == 'number' then\n  xpUI:breakAnchors()\n  xpUI:setPosition({x = savedPos.x, y = savedPos.y})\nend\n\nlocal function isCtrlPressed()\n  return modules.corelib.g_keyboard.isCtrlPressed()\nend\nxpUI.onDragEnter = function(widget, mousePos)\n  if not isCtrlPressed() then return false end\n  widget:breakAnchors()\n  widget.movingReference = {x = mousePos.x - widget:getX(), y = mousePos.y - widget:getY()}\n  return true\nend\nxpUI.onDragMove = function(widget, mousePos)\n  if not isCtrlPressed() or not widget.movingReference then return false end\n  local rect = widget:getParent():getRect()\n  local x = math.min(math.max(rect.x, mousePos.x - widget.movingReference.x), rect.x + rect.width - widget:getWidth())\n  local y = math.min(math.max(rect.y, mousePos.y - widget.movingReference.y), rect.y + rect.height - widget:getHeight())\n  widget:move(x, y)\n  storage.expPotBarPosition = {x = x, y = y}\n  return true\nend\nxpUI.onDragLeave = function(widget)\n  widget.movingReference = nil\n  persist()\n  return true\nend\n\nlocal lastLabel = nil\nlocal function refreshUI()\n  if not xpUI or xpUI:isDestroyed() then return end\n  local remaining = left()\n  if remaining > 0 then\n    local label = 'XP - ' .. formatTime(remaining)\n    if lastLabel ~= label then\n      xpUI.expPotLabel:setText(label)\n      lastLabel = label\n    end\n    xpUI:show()\n  else\n    xpUI:hide()\n    lastLabel = nil\n  end\nend\n\nlocal function resetCooldown()\n  cfg.endsAt = 0\n  cfg.percent = nil\n  cfg.lastAttempt = 0\n  persist()\n  refreshUI()\n  print('[Papel XP] Cooldown resetado.')\nend\n-- Configuracao visual: ID, duracao estimada e intervalo de tentativas.\nlocal configWindow = setupUI([[\nMainWindow\n  id: xpConfigWindow\n  size: 330 285\n  text: Papel XP - Config\n  @onSetup: self:hide()\n  @onEscape: self:hide()\n\n  Label\n    text: ID do Papel XP\n    anchors.left: parent.left\n    anchors.top: parent.top\n    margin-left: 12\n    margin-top: 12\n  TextEdit\n    id: itemId\n    anchors.left: parent.left\n    anchors.right: parent.right\n    anchors.top: prev.bottom\n    margin-left: 12\n    margin-right: 12\n    margin-top: 3\n    height: 23\n\n  Label\n    text: Duracao estimada do bonus (minutos)\n    anchors.left: parent.left\n    anchors.top: itemId.bottom\n    margin-left: 12\n    margin-top: 10\n  TextEdit\n    id: duration\n    anchors.left: parent.left\n    anchors.right: parent.right\n    anchors.top: prev.bottom\n    margin-left: 12\n    margin-right: 12\n    margin-top: 3\n    height: 23\n\n  Label\n    text: Intervalo entre tentativas (segundos)\n    anchors.left: parent.left\n    anchors.top: duration.bottom\n    margin-left: 12\n    margin-top: 10\n  TextEdit\n    id: retry\n    anchors.left: parent.left\n    anchors.right: parent.right\n    anchors.top: prev.bottom\n    margin-left: 12\n    margin-right: 12\n    margin-top: 3\n    height: 23\n\n  Button\n    id: reset\n    text: Reset XP Cooldown\n    anchors.left: parent.left\n    anchors.right: parent.right\n    anchors.bottom: save.top\n    margin-left: 12\n    margin-right: 12\n    margin-bottom: 6\n    height: 24\n\n  Button\n    id: save\n    text: Salvar e fechar\n    anchors.left: parent.left\n    anchors.right: parent.right\n    anchors.bottom: parent.bottom\n    margin-left: 12\n    margin-right: 12\n    margin-bottom: 10\n    height: 26\n]], g_ui.getRootWidget())\n\nlocal function openConfig()\n  configWindow.itemId:setText(tostring(cfg.itemId))\n  configWindow.duration:setText(tostring(cfg.durationMinutes))\n  configWindow.retry:setText(tostring(cfg.retrySeconds))\n  configWindow:show()\n  configWindow:raise()\n  configWindow:focus()\nend\n\nconfigWindow.save.onClick = function()\n  local id = tonumber(configWindow.itemId:getText())\n  local duration = tonumber(configWindow.duration:getText())\n  local retry = tonumber(configWindow.retry:getText())\n  if not id or id < 1 or id ~= math.floor(id) or\n     not duration or duration < 1 or duration > 1440 or\n     not retry or retry < 5 or retry > 3600 then\n    print('[Papel XP] Valores invalidos. ID positivo, duracao 1-1440 min, tentativas 5-3600 s.')\n    return\n  end\n  cfg.itemId = id\n  cfg.durationMinutes = duration\n  cfg.retrySeconds = retry\n  persist()\n  configWindow:hide()\n  print('[Papel XP] Configuracao salva.')\nend\n\n-- Mesmo layout compacto de Combo/Buffs: BotSwitch + botao Config.\nlocal botWidget = setupUI([[\nPanel\n  height: 17\n\n  BotSwitch\n    id: switch\n    anchors.top: parent.top\n    anchors.left: parent.left\n    text-align: center\n    width: 130\n    !text: tr(\"Exp Pot\")\n\n  Button\n    id: config\n    anchors.top: prev.top\n    anchors.bottom: prev.bottom\n    anchors.left: prev.right\n    anchors.right: parent.right\n    text: Config\n]])\n\nbotWidget.config.onClick = openConfig\nconfigWindow.reset.onClick = function()\n  resetCooldown()\n  -- Mantem a janela aberta para mostrar as configuracoes.\nend\n\nmacro(1000, function() refreshUI() end)\n\nlocal expMacro = macro(1000, function()\n  if not g_game.isOnline() or not player then return end\n  if left() > 0 then return end\n  if type(isInPz) == 'function' and isInPz() then return end\n  local t = clock()\n  if t - cfg.lastAttempt < cfg.retrySeconds then return end\n  cfg.lastAttempt = t\n  persist()\n  useWith(cfg.itemId, player)\nend)\n\n-- O botao principal controla somente o uso automatico.\n-- O contador e a leitura das mensagens continuam ativos.\ncfg.enabled = cfg.enabled ~= false\nexpMacro.setOn(cfg.enabled)\nbotWidget.switch:setOn(cfg.enabled)\nbotWidget.switch.onClick = function()\n  cfg.enabled = not cfg.enabled\n  expMacro.setOn(cfg.enabled)\n  botWidget.switch:setOn(cfg.enabled)\n  persist()\nend\n\nlocal function normalize(text)\n  text = tostring(text or ''):lower()\n  text = text:gsub('[áàâã]', 'a'):gsub('[éê]', 'e'):gsub('[í]', 'i'):gsub('[óôõ]', 'o'):gsub('[ú]', 'u'):gsub('[ç]', 'c')\n  return text\nend\n\nonTextMessage(function(mode, text)\n  local msg = normalize(text)\n  -- Resposta do servidor quando o bonus ja esta ativo.\n  -- Ex.: \"Voce ja esta sob o efeito de uma Potion de EXP. Tempo restante: 7min 53s.\"\n  -- O tempo informado pelo servidor tem prioridade sobre o contador local.\n  if msg:find('sob o efeito de uma potion de exp', 1, true) then\n    local trecho = msg:match('tempo restante:%s*([^\\n]+)')\n    if trecho then\n      local h = tonumber(trecho:match('(%d+)%s*h')) or 0\n      local m = tonumber(trecho:match('(%d+)%s*min')) or 0\n      local sec = tonumber(trecho:match('(%d+)%s*s')) or 0\n      local total = h * 3600 + m * 60 + sec\n      if total > 0 then\n        cfg.endsAt = clock() + total\n        persist()\n        refreshUI()\n        print('[Papel XP] Tempo sincronizado com servidor: ' .. formatTime(total))\n      end\n    end\n    return\n  end\n  -- A mensagem confirma a ativacao, mas nao fornece a duracao real.\n  if msg:find('agora voce esta recebendo mais exp por matar monstros', 1, true) then\n    cfg.endsAt = clock() + (cfg.durationMinutes * 60)\n    cfg.percent = nil\n    persist()\n    refreshUI()\n    print('[Papel XP] Ativado. Contador estimado iniciado.')\n    return\n  end\n  -- Compatibilidade com a mensagem antiga que informa duracao.\n  local pct, word = msg:match('voce ativou o bonus de exp (%d+)%%? por (%a+) horas?')\n  if pct then\n    local hours = tonumber(word) or (word == 'uma' and 1)\n    if hours then\n      cfg.endsAt = clock() + hours * 3600\n      cfg.percent = tonumber(pct)\n      persist()\n      refreshUI()\n    end\n  end\nend)\n\nrefreshUI()\n",
+  "comboConfig": {
+    "enabled": true,
+    "spells": {
+      "Combo 1": [
+        {
+          "exhaust": 1000,
+          "cooldownTime": 1261.143,
+          "index": 1,
+          "orangeMsg": "fuumetsu yasaka no magatama",
+          "enabled": true,
+          "cooldownTotal": 3000,
+          "spellName": "fuumetsu yasaka no magatama"
+        },
+        {
+          "cooldownTime": 1264.065,
+          "enabled": true,
+          "index": 2,
+          "distance": 10,
+          "orangeMsg": "magen shinkarasu",
+          "cooldownTotal": 5000,
+          "spellName": "magen shinkarasu"
+        },
+        {
+          "exhaust": 1000,
+          "cooldownTime": 1262.371,
+          "index": 3,
+          "orangeMsg": "susano kogeki",
+          "enabled": true,
+          "cooldownTotal": 3000,
+          "spellName": "susano kogeki"
+        },
+        {
+          "exhaust": 1000,
+          "cooldownTime": 1259.127,
+          "index": 4,
+          "orangeMsg": "katon fenix gouenkyuu",
+          "enabled": true,
+          "cooldownTotal": 3000,
+          "spellName": "katon fenix gouenkyuu"
+        },
+        {
+          "exhaust": 1000,
+          "cooldownTime": 1239.116,
+          "index": 5,
+          "enabled": true,
+          "orangeMsg": "iatsu sharingan",
+          "cooldownTotal": 3000,
+          "spellName": "iatsu sharingan"
+        },
+        {
+          "exhaust": 1000,
+          "cooldownTime": 41022.888,
+          "index": 6,
+          "enabled": true,
+          "orangeMsg": "fuumetsu shuriken",
+          "cooldownTotal": 4000,
+          "spellName": "fuumetsu shuriken"
+        },
+        {
+          "exhaust": 1000,
+          "cooldownTime": 41019.917,
+          "index": 7,
+          "enabled": true,
+          "orangeMsg": "amaterasu",
+          "cooldownTotal": 2000,
+          "spellName": "amaterasu"
+        }
+      ],
+      "Combo 4": [
+
+      ],
+      "Combo 3": [
+
+      ],
+      "Combo 5": [
+
+      ],
+      "Combo 2": [
+        {
+          "enabled": true,
+          "index": 1,
+          "spellName": "katon dragon no jutsu"
+        }
+      ]
+    },
+    "selected_type": "Combo 1"
+  },
+  "shazamSummon": {
+    "jutsu": "Karasu Bunshin",
+    "nomes": "Karasu",
+    "mensagem": "Karasu Bunshin",
+    "intervalo": 3000,
+    "ativo": true
+  },
+  "jumpBackup": {
+    "667,1426,6": {
+      "jumpTo": "jump up",
+      "direction": 0
+    },
+    "1445,536,6": {
+      "jumpTo": "jump down",
+      "direction": 1
+    },
+    "1194,1406,6": {
+      "jumpTo": "jump up",
+      "direction": 0
+    },
+    "1033,1328,6": {
+      "jumpTo": "jump down",
+      "direction": 1
+    },
+    "758,1087,6": {
+      "jumpTo": "jump down",
+      "direction": 1
+    },
+    "1376,1415,6": {
+      "jumpTo": "jump down",
+      "direction": 2
+    },
+    "670,1424,4": {
+      "jumpTo": "jump down",
+      "direction": 2
+    },
+    "1163,721,6": {
+      "jumpTo": "jump down",
+      "direction": 1
+    },
+    "1163,720,6": {
+      "jumpTo": "jump down",
+      "direction": 1
+    },
+    "1378,1415,7": {
+      "jumpTo": "jump up",
+      "direction": 3
+    },
+    "1164,720,7": {
+      "jumpTo": "jump up",
+      "direction": 3
+    },
+    "761,1084,7": {
+      "jumpTo": "jump up",
+      "direction": 0
+    },
+    "1200,1406,6": {
+      "jumpTo": "jump up",
+      "direction": 0
+    },
+    "774,652,8": {
+      "jumpTo": "jump down",
+      "direction": 2
+    },
+    "1016,1012,6": {
+      "jumpTo": "jump down",
+      "direction": 2
+    },
+    "668,1425,5": {
+      "jumpTo": "jump down",
+      "direction": 2
+    },
+    "1017,1013,7": {
+      "jumpTo": "jump up",
+      "direction": 0
+    },
+    "1202,1405,5": {
+      "jumpTo": "jump down",
+      "direction": 2
+    },
+    "1199,1406,6": {
+      "jumpTo": "jump up",
+      "direction": 0
+    },
+    "774,653,9": {
+      "jumpTo": "jump up",
+      "direction": 0
+    },
+    "1201,1406,6": {
+      "jumpTo": "jump up",
+      "direction": 0
+    },
+    "1034,1328,7": {
+      "jumpTo": "jump up",
+      "direction": 3
+    },
+    "1033,1329,6": {
+      "jumpTo": "jump down",
+      "direction": 1
+    },
+    "1018,1012,7": {
+      "jumpTo": "jump up",
+      "direction": 3
+    }
+  },
+  "kunaiKey": "F2",
+  "excludeIds": [
+
+  ],
+  "ChakraPotion": {
+    "percent": 70,
+    "enabled": false,
+    "id": 23510
+  },
+  "especiaisConfig": {
+    "enabled": true,
+    "spells": {
+      "Buffs": [
+        {
+          "activeTotal": 60,
+          "spellTime": false,
+          "cooldownTotal": 60,
+          "spellName": "fuumetsu susanoo",
+          "showMsg": "fuumetsu susanoo",
+          "cooldownTime": 1791924233,
+          "enabled": true,
+          "index": 1,
+          "type": "Buffs",
+          "orangeMsg": "fuumetsu susanoo",
+          "key": "AUTO",
+          "activeTime": 1791924233
+        },
+        {
+          "type": "Buffs",
+          "spellTime": false,
+          "cooldownTotal": 60,
+          "spellName": "kekkei genkai",
+          "showMsg": "kekkei genkai",
+          "key": "AUTO",
+          "orangeMsg": "kekkei genkai",
+          "index": 2,
+          "activeTotal": 60,
+          "enabled": true,
+          "cooldownTime": 1791924236,
+          "activeTime": 1791924236
+        }
+      ]
+    },
+    "selected_type": "Buffs"
+  },
+  "playerList": {
+    "enemyList": [
+
+    ],
+    "groupMembers": false,
+    "marks": false,
+    "blackList": [
+
+    ],
+    "friendList": [
+
+    ]
+  },
+  "especiaisTS": {
+    "stackMobIconEnabled": true,
+    "stackIconEnabled": true,
+    "stackIconPos": {
+      "y": 50,
+      "x": 200
+    },
+    "stackMobIconPos": {
+      "y": 80,
+      "x": 200
+    },
+    "enabled": false,
+    "spells": {
+      "Outros": [
+
+      ],
+      "Retas": [
+
+      ],
+      "Stack": [
+
+      ],
+      "Traps": [
+
+      ]
+    },
+    "selected_type": "Retas"
+  },
+  "autoLootPouch": {
+    "itemLimit": 200,
+    "active": false
+  },
+  "fugaSpells": [
+    {
+      "selfHealth": 40,
+      "enableTimeSpell": true,
+      "keyPress": "AUTO",
+      "orangeSpell": "karasuamatsukami",
+      "spellCast": "karasuamatsukami",
+      "rawCooldownActive": 3,
+      "widgetPos": {
+        "y": 231,
+        "x": 609
+      },
+      "cooldownTime": 1791923054,
+      "index": 1,
+      "rawCooldownTotal": 120,
+      "enabled": true,
+      "onScreen": "karasuamatsukami",
+      "activeTime": 1791922937
+    }
+  ],
+  "senseNames": {
+    "lastName": "Rayomcqueen",
+    "targetName": "Yuuta Watanabe"
+  }
+}
