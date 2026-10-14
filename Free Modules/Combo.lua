@@ -1,4 +1,4 @@
-local titulo = UI.Label("━━━━━━ PVP ━━━━━━")
+local titulo = UI.Label("------ PVP ------")
 titulo:setColor("#F38404")
 titulo:setTextAlign(AlignCenter)
 
