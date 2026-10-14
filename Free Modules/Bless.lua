@@ -254,8 +254,11 @@ local function validateSession()
 
     -- Depois de 30 minutos sem atualização,
     -- considera que precisa verificar novamente.
+    -- Não invalidar bless apenas pelo tempo: só uma morte ou
+    -- resposta explícita do servidor deve alterar o estado.
+    -- A verificação manual continua disponível no botão.
     if timeDiff > 1800 then
-        cfg.isBlessed = false
+        cfg.savedTime = getTime()
     end
 end
 
@@ -581,7 +584,9 @@ onTextMessage(function(mode, text)
     -- =====================================================
 
     if msg:find("possui todas as blesses")
-       or msg:find("possui todas as bless") then
+       or msg:find("possui todas as bless")
+       or msg:find("you already have all blessings", 1, true)
+       or msg:find("already have all blessings", 1, true) then
 
         saveCharState(true)
 
