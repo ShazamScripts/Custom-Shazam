@@ -189,6 +189,7 @@ local USER_ORDER = {
 }
 
 local OTHERS_ORDER = {
+  "Bless.lua",
   "Macros_PT.lua",
   "Follow_Player.lua",
   "travel_system.lua",
