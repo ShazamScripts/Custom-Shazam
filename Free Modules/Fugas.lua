@@ -208,7 +208,6 @@ local doRemoveMouseMove = function(entry)
 	widget:setFocusable(false);
 	widget:setPhantom(true);
 	widget:setDraggable(false);
-	widget:setOpacity(7 / 10);
 end
 
 local doSetMouseMove = function(entry)
@@ -221,7 +220,6 @@ local doSetMouseMove = function(entry)
 	widget:setFocusable(true);
 	widget:setPhantom(false);
 	widget:setDraggable(true);
-	widget:setOpacity(1);
 
 	widget["onDragEnter"] = function(widget, mousePos)
 		widget:breakAnchors();
