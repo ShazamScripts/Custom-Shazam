@@ -239,7 +239,6 @@ local function setupTimespellWidget(entry,isMob)
     local name=firstLetterUpper((isMob and entry.showMsgMob) or (not isMob and entry.showMsg) or entry.spellName)
     widget:setText(name..": 0s")
     widget:setColor("green")
-    widget:setOpacity(7 / 10)
     widget.entry=entry; widget.isMobWidget=isMob
     attachSpellWidgetCallbacks(widget,isMob)
     spellsWidgets[entry.type]=spellsWidgets[entry.type] or {}
