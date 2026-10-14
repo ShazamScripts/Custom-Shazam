@@ -195,14 +195,13 @@ local function formatRemainingTime(time)
 end
 
 -- Visual do Time Spell padronizado com Fugas (TyrLivre).
-local timespellStyle=[[Label
+local timespellStyle=[[UIWidget
   background-color: black
-  font: verdana-11px-rounded
-  padding: 2 6
+  padding: 0 5
+  text-auto-resize: true
   focusable: true
   phantom: false
-  draggable: true
-  text-auto-resize: true]]
+  draggable: true]]
 
 local function attachSpellWidgetCallbacks(widget,isMob)
     widget.onDragEnter=function(self,mousePos)
