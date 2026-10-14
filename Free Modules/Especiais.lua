@@ -194,11 +194,12 @@ local function formatRemainingTime(time)
     return string.format("%.0f",time-os.time()).."s"
 end
 
+-- Visual do Time Spell padronizado com Fugas (TyrLivre).
 local timespellStyle=[[Label
   background-color: alpha
   font: verdana-11px-rounded
   padding: 2 6
-  focusable: false
+  focusable: true
   phantom: false
   draggable: true
   text-auto-resize: true]]
@@ -236,23 +237,38 @@ local function setupTimespellWidget(entry,isMob)
     local widget=setupUI(timespellStyle,g_ui.getRootWidget())
     local pName=isMob and entry.spellName.."_mob" or entry.spellName
     widget:setPosition(isMob and (entry.posMob or {x=50,y=80}) or (entry.pos or {x=50,y=50}))
-    if isMob then widget:setText(firstLetterUpper(entry.showMsgMob or (entry.spellName.." mob"))..": Pronto!") else widget:setText(firstLetterUpper(entry.showMsg or entry.spellName)..": Pronto!") end
-    widget:setColor("green"); widget.entry=entry; widget.isMobWidget=isMob; attachSpellWidgetCallbacks(widget,isMob)
-    spellsWidgets[entry.type]=spellsWidgets[entry.type] or {}; spellsWidgets[entry.type][pName]=widget
+    local name=firstLetterUpper((isMob and entry.showMsgMob) or (not isMob and entry.showMsg) or entry.spellName)
+    widget:setText(name..": 0s")
+    widget:setColor("green")
+    widget.entry=entry; widget.isMobWidget=isMob
+    attachSpellWidgetCallbacks(widget,isMob)
+    spellsWidgets[entry.type]=spellsWidgets[entry.type] or {}
+    spellsWidgets[entry.type][pName]=widget
 end
 
 local function doSetWidgetContent(widget)
-    local entry=widget.entry; local isMob=widget.isMobWidget; local textToSet=""; local color="green"
-    if isMob then
-        textToSet=firstLetterUpper(entry.showMsgMob or (entry.spellName.." mob"))
-        if entry.cooldownTimeMob and entry.cooldownTimeMob>os.time() then textToSet=textToSet..": "..formatRemainingTime(entry.cooldownTimeMob); color="#FF4040" else textToSet=textToSet..": Pronto!"; entry.cooldownTimeMob=nil end
+    local entry=widget.entry
+    local isMob=widget.isMobWidget
+    local name=firstLetterUpper((isMob and entry.showMsgMob) or (not isMob and entry.showMsg) or entry.spellName)
+    local nowTime=os.time()
+    local activeTime=not isMob and (entry.activeTime or 0)-nowTime or -1
+    local cooldownTime=(isMob and (entry.cooldownTimeMob or 0) or (entry.cooldownTime or 0))-nowTime
+    local textToSet=name..": 0s"
+    local color="green"
+    if activeTime>=0 then
+        textToSet=name..": "..math.ceil(activeTime).."s"
+        color="orange"
+    elseif cooldownTime>=0 then
+        textToSet=name..": "..math.ceil(cooldownTime).."s"
+        color="red"
     else
-        textToSet=firstLetterUpper(entry.showMsg or entry.spellName)
-        if entry.activeTime and entry.activeTime>os.time() then textToSet=textToSet..": "..formatRemainingTime(entry.activeTime); color="#00FFFF"
-        elseif entry.cooldownTime and entry.cooldownTime>os.time() then textToSet=textToSet..": "..formatRemainingTime(entry.cooldownTime); color="#FF4040"
-        else textToSet=textToSet..": Pronto!"; entry.activeTime=nil; entry.cooldownTime=nil end
+        if isMob then entry.cooldownTimeMob=nil
+        else entry.activeTime=nil; entry.cooldownTime=nil end
     end
-    if widget._text~=textToSet or widget._color~=color then widget:setText(textToSet); widget:setColor(color); widget._text=textToSet; widget._color=color end
+    if widget._text~=textToSet or widget._color~=color then
+        widget:setText(textToSet); widget:setColor(color)
+        widget._text=textToSet; widget._color=color
+    end
 end
 
 local function hasStackAttack()
