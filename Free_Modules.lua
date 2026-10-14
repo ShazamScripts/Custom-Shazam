@@ -176,9 +176,9 @@ local MACRO_ORDER = {
   "Potion.lua",
   "Auto_kai.lua",
   "Summon.lua",
+  "Sense.lua",
   "Escadas.lua",
   "Jump.lua",
-  "Sense.lua",
   "Enemy.lua",
   "BugMap.lua",
 }
