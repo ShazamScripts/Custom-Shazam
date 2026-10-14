@@ -1,5 +1,6 @@
-lblInfo= UI.Label("-- PVP --")
-lblInfo:setColor("yellow")
+local titulo = UI.Label("━━━━━━ PVP ━━━━━━")
+titulo:setColor("#F38404")
+titulo:setTextAlign(AlignCenter)
 
 
 -- Combo Macro - versão limpa e independente
