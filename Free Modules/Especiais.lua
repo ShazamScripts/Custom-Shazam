@@ -196,7 +196,7 @@ end
 
 -- Visual do Time Spell padronizado com Fugas (TyrLivre).
 local timespellStyle=[[Label
-  background-color: alpha
+  background-color: black
   font: verdana-11px-rounded
   padding: 2 6
   focusable: true
