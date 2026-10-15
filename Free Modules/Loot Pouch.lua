@@ -5,12 +5,12 @@ if type(setDefaultTab) == "function" then
   setDefaultTab("Others")
 end
 
-local MACRO_NAME = "Auto Retirar Loot 500"
+local MACRO_NAME = "Auto Retirar Loot"
 local CONFIG_KEY = "autoLootPouch"
-local DEFAULT_ITEM_LIMIT = 200
+local DEFAULT_ITEM_LIMIT = 500
 local RIGHT_BUTTON = MouseRightButton or 2
-local CONFIRM_TIMEOUT = 5000
-local ACTION_COOLDOWN = 1800
+local CONFIRM_TIMEOUT = 3000
+local ACTION_COOLDOWN = 600
 
 local function normalizeItemLimit(value)
   value = math.floor(tonumber(value) or DEFAULT_ITEM_LIMIT)
@@ -35,7 +35,8 @@ local state = {
   nextPouchSearch = 0,
   nextOpenCheck = 0,
   openedByMacro = false,
-  inspectUntil = 0
+  inspectUntil = 0,
+  inspectReadyAt = 0
 }
 
 local function safeCall(callback, fallback)
@@ -422,9 +423,10 @@ Panel
     text: Config
 ]])
 
--- Ciclo fixo: abrir, inspecionar, coletar (se houver), fechar e esperar 60s.
+-- Abre a cada 60s, aguarda brevemente os dados, fecha logo se nao houver coleta.
 local OPEN_CHECK_INTERVAL = 60000
-local INSPECT_TIME = 2200
+local INSPECT_TIME = 1000
+local MIN_INSPECT_TIME = 350 -- tempo minimo para atualizar os itens
 
 local function nativePouch()
   local root = rootWidget()
@@ -459,6 +461,7 @@ local function closePouch()
   end
   state.openedByMacro = false
   state.inspectUntil = 0
+  state.inspectReadyAt = 0
   state.pouch = nil
   state.nextPouchSearch = 0
 end
@@ -486,6 +489,7 @@ local function openPouch(currentTime)
   if called then
     state.openedByMacro = true
     state.inspectUntil = currentTime + INSPECT_TIME
+    state.inspectReadyAt = currentTime + MIN_INSPECT_TIME
     state.pouch = nil
     state.nextPouchSearch = 0
   end
@@ -494,13 +498,13 @@ end
 
 local function closeAfterCollect()
   if type(schedule) == "function" then
-    schedule(350, closePouch)
+    schedule(150, closePouch)
   else
     closePouch()
   end
 end
 
-local autoLootPouch = macro(250, function()
+local autoLootPouch = macro(100, function()
   if not g_game or not safeCall(function() return g_game.isOnline() end, false) then
     return
   end
@@ -546,6 +550,7 @@ local autoLootPouch = macro(250, function()
       state.confirmReadyAt = 0
       state.confirmDeadline = 0
       state.nextAction = currentTime + 1000
+      closePouch()
     end
     return
   end
@@ -578,18 +583,20 @@ local autoLootPouch = macro(250, function()
     return
   end
 
+  -- Aguarda uma janela curta para o cliente receber/atualizar a lista.
+  -- Se nao houver item no limite, fecha assim que a leitura estiver pronta.
+  if currentTime < state.inspectReadyAt then return end
+
   local fullItem, eventWidget = findFullItem(pouch)
   if not fullItem then
-    if state.openedByMacro and currentTime >= state.inspectUntil then
-      closePouch()
-    end
+    closePouch()
     return
   end
 
   if rightClickItem(fullItem, pouch, eventWidget) then
     state.waitingConfirm = true
     state.nativeConfirm = eventWidget ~= nil
-    state.confirmReadyAt = currentTime + 250
+    state.confirmReadyAt = currentTime + 100
     state.confirmDeadline = currentTime + CONFIRM_TIMEOUT
     state.inspectUntil = currentTime + CONFIRM_TIMEOUT + 500
     state.nextAction = currentTime + ACTION_COOLDOWN
