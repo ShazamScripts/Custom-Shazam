@@ -5,7 +5,8 @@ storage.shazamSummon = storage.shazamSummon or {
   jutsu = "",
   mensagem = "",
   nomes = "",
-  intervalo = 850
+  intervalo = 850,
+  quantidade = 2
 }
 local cfg = storage.shazamSummon
 local ultimoCast = 0
@@ -18,36 +19,46 @@ local function normalizar(s)
   return tostring(s or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
 end
 
--- Lista normalizada apenas quando a configuracao muda.
-local nomesCacheTexto, nomesCache = nil, {}
+-- Quantidade escolhida na janela; tambem aceita override Nome x2.
+-- Cada criatura e contada separadamente, mesmo com o mesmo nome.
+local nomesCacheTexto, nomesCache, totalNecessario = nil, {}, 0
 local function nomesConfigurados()
+  local qtdPadrao = math.max(1, math.min(20, math.floor(tonumber(cfg.quantidade) or 1)))
   local texto = normalizar(cfg.nomes)
-  if texto ~= nomesCacheTexto then
-    nomesCacheTexto, nomesCache = texto, {}
-    for nome in texto:gmatch("[^,]+") do
+  local chave = texto .. "|" .. qtdPadrao
+  if chave ~= nomesCacheTexto then
+    nomesCacheTexto, nomesCache, totalNecessario = chave, {}, 0
+    for entrada in texto:gmatch("[^,\n]+") do
+      entrada = normalizar(entrada)
+      local nome, qtd = entrada:match("^(.-)%s+x%s*(%d+)$")
+      if not nome then nome, qtd = entrada, qtdPadrao end
       nome = normalizar(nome)
-      if nome ~= "" then nomesCache[#nomesCache + 1] = nome end
+      qtd = math.min(tonumber(qtd) or 1, 20)
+      if nome ~= "" and qtd > 0 then
+        nomesCache[nome] = (nomesCache[nome] or 0) + qtd
+        totalNecessario = totalNecessario + qtd
+      end
     end
   end
-  return nomesCache
+  return nomesCache, totalNecessario
 end
 
 local function verificar()
-  local nomes = nomesConfigurados()
-  if #nomes == 0 then return nil end
-  -- Busca apenas os nomes configurados; encerra assim que todos forem vistos.
-  local faltantes = {}
-  for _, nome in ipairs(nomes) do faltantes[nome] = true end
-  local presentes = 0
+  local exigidos, total = nomesConfigurados()
+  if total == 0 then return nil end
+  local encontrados, presentes = {}, 0
   for _, criatura in ipairs(getSpectators() or {}) do
-    local nome = normalizar(criatura:getName())
-    if faltantes[nome] then
-      faltantes[nome] = nil
-      presentes = presentes + 1
-      if presentes == #nomes then break end
+    if criatura:isMonster() then
+      local nome = normalizar(criatura:getName())
+      local limite = exigidos[nome]
+      if limite and (encontrados[nome] or 0) < limite then
+        encontrados[nome] = (encontrados[nome] or 0) + 1
+        presentes = presentes + 1
+        if presentes >= total then break end
+      end
     end
   end
-  return presentes == #nomes, presentes
+  return presentes >= total, presentes
 end
 
 -- Mesma disposicao do Travel System: macro a esquerda, Config a direita.
@@ -76,7 +87,7 @@ Panel
 local configUI = setupUI([[
 MainWindow
   id: summonWindow
-  size: 340 255
+  size: 340 305
   text: Auto Summon - Config
   @onSetup: self:hide()
   @onEscape: self:hide()
@@ -129,6 +140,22 @@ MainWindow
     margin-top: 3
     height: 24
 
+  Label
+    text: Quantidade por nome (1 a 20)
+    anchors.top: nomes.bottom
+    anchors.left: parent.left
+    margin-top: 9
+    margin-left: 12
+  TextEdit
+    id: quantidade
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-left: 12
+    margin-right: 12
+    margin-top: 3
+    height: 24
+
   Button
     id: salvar
     text: Salvar e fechar
@@ -141,14 +168,18 @@ MainWindow
     height: 25
 ]], g_ui.getRootWidget())
 
+local jaViuSummon = false
+
 local function salvar()
   cfg.jutsu = configUI.jutsu:getText()
   cfg.mensagem = configUI.mensagem:getText()
   cfg.nomes = configUI.nomes:getText()
+  cfg.quantidade = math.max(1, math.min(20, math.floor(tonumber(configUI.quantidade:getText()) or 1)))
   confirmado = false
   aguardando = false
   vistoNaTela = false
   proximaTentativa = 0
+  jaViuSummon = false
   configUI:hide()
 end
 
@@ -156,64 +187,53 @@ janela.config.onClick = function()
   configUI.jutsu:setText(cfg.jutsu or "")
   configUI.mensagem:setText(cfg.mensagem or "")
   configUI.nomes:setText(cfg.nomes or "")
+  configUI.quantidade:setText(tostring(cfg.quantidade or 2))
   configUI:show()
   configUI:raise()
   configUI:focus()
 end
 configUI.salvar.onClick = salvar
 
--- Resposta rapida sem spam: kai apenas quando TODOS somem da tela.
--- A ausencia da tela nao prova morte; escadas e jump tambem acionam kai.
-local fase = "verificar"
-local executarEm = 0
-local proximoKai = 0
+-- Invocacao insistente durante combate, baseada na macro Katsuyu.
+-- Intervalo curto entre tentativas; a presenca dos summons encerra o spam.
 local proximoJutsu = 0
-local ultimaPresenca = false
+local proximoKai = 0
+local liberarJutsuEm = 0
+local intervaloJutsu = 200 -- ms; ajuste se o servidor limitar o chat
 local intervaloKai = 1200
 local esperaAposKai = 250
-local intervaloMinJutsu = 850
 
-local summonMacro = macro(100, function()
+local summonMacro = macro(50, function()
   if not g_game.isOnline() or normalizar(cfg.jutsu) == "" then return end
   local todos, presentes = verificar()
-  if todos == nil then return end -- Exige nomes para evitar kai infinito.
+  if todos == nil then return end
   local tempo = now
 
-  if presentes > 0 then
-    ultimaPresenca = true
-    if fase == "aguardando_summon" then fase = "verificar" end
-  end
+  if presentes > 0 then jaViuSummon = true end
   if todos then
     confirmado = true
     aguardando = false
-    vistoNaTela = true
-    fase = "verificar"
     return
   end
 
-  -- Sumiram todos apos ja terem sido vistos: limpar summon preso em outro andar.
-  if presentes == 0 and ultimaPresenca and fase == "verificar" and tempo >= proximoKai then
+  -- Quando todos desaparecerem depois de vistos, libera invocacao com kai.
+  if presentes == 0 and jaViuSummon then
+    if tempo < proximoKai then return end
     say("kai")
     proximoKai = tempo + intervaloKai
-    executarEm = tempo + esperaAposKai
-    fase = "aguardando_summon"
-    ultimaPresenca = false
+    liberarJutsuEm = tempo + esperaAposKai
+    proximoJutsu = liberarJutsuEm
+    jaViuSummon = false
     confirmado = false
     aguardando = false
-    vistoNaTela = false
     return
   end
 
-  if fase == "aguardando_summon" and tempo < executarEm then return end
-  if fase == "aguardando_summon" then fase = "verificar" end
-
-  -- Invoca imediatamente quando permitido, inclusive durante o combate.
-  -- Respeita o intervalo salvo caso seja maior que o minimo de seguranca.
-  local intervalo = intervaloMinJutsu
-  if tempo < proximoJutsu then return end
-  proximoJutsu = tempo + intervalo
+  if tempo < liberarJutsuEm or tempo < proximoJutsu then return end
+  proximoJutsu = tempo + intervaloJutsu
   ultimoCast = tempo
   aguardando = true
+  -- Nao aguarda resposta do servidor: insiste mesmo atacando monstros.
   say(cfg.jutsu)
 end)
 
