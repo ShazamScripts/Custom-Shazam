@@ -43,25 +43,9 @@ local function safeCharacterName(name)
   return sanitizeName(name, "Unknown")
 end
 
+-- Pasta unica e estavel, independente do estado da conexao.
 local function getShazamNtoName()
-  if NTO_NAME_OVERRIDE and tostring(NTO_NAME_OVERRIDE) ~= "" then
-    return sanitizeName(NTO_NAME_OVERRIDE, "NTO")
-  end
-
-  local name = nil
-  pcall(function()
-    if g_game and type(g_game.getWorldName) == "function" then
-      name = g_game.getWorldName()
-    end
-  end)
-
-  if not name or tostring(name) == "" then
-    pcall(function()
-      if G and G.host then name = G.host end
-    end)
-  end
-
-  return sanitizeName(name, "NTO_Desconhecido")
+  return sanitizeName(NTO_NAME_OVERRIDE or "NTOUniverse", "NTOUniverse")
 end
 
 -- Exposto para o Jump.lua usar a mesma pasta de NTO.
@@ -135,6 +119,7 @@ local function getShazamCharacterName()
     end)
   end
 
+  if not name or tostring(name) == "" then return nil end
   return safeCharacterName(name)
 end
 
@@ -210,6 +195,9 @@ local function setupShazamStorage()
   ensureShazamStorageDir()
 
   local characterName = getShazamCharacterName()
+  if not characterName then
+    return false -- nao criar Storage_Unknown durante login/logout
+  end
   shazamStorageFile = shazamStorageDir .. "/Storage_" .. characterName .. ".json"
   shazamStorageLastSnapshot = nil
 
@@ -277,7 +265,7 @@ function saveMyBotStorage(force)
   end
 
   if not shazamStorageFile then
-    setupShazamStorage()
+    if not setupShazamStorage() then return false end
   end
 
   local encoded, err = encodeStorage()
@@ -320,13 +308,14 @@ storage.jumps = storage.jumps or {}
 if g_game and ShazamGuard then
   ShazamGuard.connect(g_game, {
     onGameStart = function()
-      setupShazamStorage()
+      if not setupShazamStorage() then return end
       normalizeShazamStorage()
       saveMyBotStorage(true)
       print("[Shazam Scripts] Personagem detectado. Storage: " .. tostring(shazamStorageFile))
     end,
     onGameEnd = function()
       saveMyBotStorage(true)
+      shazamStorageFile = nil
     end
   })
 end
