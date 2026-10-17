@@ -39,9 +39,7 @@ TargetBot.Creature.calculatePriority = function(creature, config, path)
   end
 
   -- extra priority for low health
-  if config.chase and creature:getHealthPercent() < 30 then
-    priority = priority + 5
-  elseif creature:getHealthPercent() < 20 then
+  if creature:getHealthPercent() < 20 then
     priority = priority + 2.5
   elseif creature:getHealthPercent() < 40 then
     priority = priority + 1.5
