@@ -489,5 +489,3 @@ macro(200, "Follow Normal", function()
     end
   end
 end)
-
-UI.Separator()
