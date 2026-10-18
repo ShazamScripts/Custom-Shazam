@@ -1,4 +1,3 @@
-UI.Separator()
 leaderPositions = {}
 local leaderDirections = {}
 local leader
