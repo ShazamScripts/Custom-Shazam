@@ -1,4 +1,4 @@
--- Fugas da TyrLivre adaptada para Custom Shazam (sem TyrBot/Chronic).
+-- Fugas Shazam
 local FUGAS_RESTRICTED_MODE = false
 local FUGAS_FULL_FEATURES = true -- Mantem todas as funcionalidades habilitadas; nao depende de Chronic.
 local shazamFugaStackingCreature, shazamFugaComboDelay
@@ -164,7 +164,7 @@ end
 local hasAnyActive = function(type)
 	local spells = config["spells"][type];
 	for _, entry in ipairs(spells) do
-		if (entry["activeTime"] and entry["activeTime"] >= os["time"]()) then
+		if (entry["activeTime"] and entry["activeTime"] > os["time"]()) then
 			return true;
 		end
 	end
@@ -450,7 +450,7 @@ local canCast = function(entry)
 		return false;
 	end
 	
-	if ((entry["cooldownTime"] or 0) >= os["time"]()) then
+	if ((entry["cooldownTime"] or 0) > os["time"]()) then
 		return false;
 	end
 
@@ -465,7 +465,7 @@ local canCast = function(entry)
 	if (entry["type"] == spellsTypes["ESCAPE"]) then
 		if (percent > 0) then
 			local healthPercent = (player:getHealthPercent() or 100);
-			if (healthPercent < getCastPercent(percent)) then
+			if (healthPercent <= getCastPercent(percent)) then
 				return true;
 			end
 		end
@@ -540,6 +540,35 @@ local canCast = function(entry)
 		
 		return isKeyPressed(entry["key"]);
 	end
+end
+
+-- Fugas urgentes: verificacao independente do delay global de macros.
+-- Evita spam de pacotes enquanto aguarda o retorno do servidor.
+local escapePending = {}
+local ESCAPE_RETRY_MS = 250
+local function castUrgentEscape()
+    if not config.enabled or isInPz() then return end
+    local entries = config.spells[spellsTypes.ESCAPE]
+    if not entries or hasAnyActive(spellsTypes.ESCAPE) then return end
+    local hp = player and player:getHealthPercent() or 100
+    local t = now
+    for _, entry in ipairs(entries) do
+        if entry.enabled and (entry.cooldownTime or 0) <= os.time() then
+            local threshold = tonumber(entry.percent) or 0
+            local triggered = (threshold > 0 and hp <= getCastPercent(threshold))
+            if not triggered and entry.key and entry.key ~= "AUTO" then
+                triggered = isKeyPressed(entry.key)
+            end
+            if triggered then
+                local id = entry.spellName
+                if t >= (escapePending[id] or 0) then
+                    escapePending[id] = t + ESCAPE_RETRY_MS
+                    say(id, table.size(spellsOptions) - table.find(spellsOptions, entry.type))
+                    return -- Uma por verificacao; a proxima pode sair no proximo ciclo.
+                end
+            end
+        end
+    end
 end
 
 local doSpellCast = function(type)
@@ -1214,7 +1243,8 @@ onTalk(function(name, level, mode, text)
 	text = text:trim():lower();
 	for _, data in pairs(config["spells"]) do
 		for _, entry in ipairs(data) do
-			if (entry["orangeMsg"] == text and (entry["cooldownTime"] or 0) < os["time"]()) then
+			if (entry["orangeMsg"] == text and (entry["cooldownTime"] or 0) <= os["time"]()) then
+                escapePending[entry["spellName"]] = nil
 			
 				local cooldownTotal = (entry["cooldownTotal"] or 0);
 				if (cooldownTotal > 0) then
@@ -1373,7 +1403,7 @@ macro(100, function()
 	end
 end)
 
-macro(50, function()
+macro(10, function()
 	if (not config["enabled"]) then return; end
 	if (isInPz()) then return; end
 	
@@ -1389,8 +1419,10 @@ macro(50, function()
 		doStack();
 	end
 	
+	castUrgentEscape();
+	-- As fugas sao tratadas acima, sem competir com outras categorias.
 	for _, type in ipairs(spellsOptions) do
-		doSpellCast(type);
+		if type ~= spellsTypes.ESCAPE then doSpellCast(type) end
 	end
 end)
 
